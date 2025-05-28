@@ -1,11 +1,23 @@
 package com.saludtotal.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class ProfesionalDTO {
 
+    @NotNull(message = "El id del profesional es obligatorio")
     private Long id;
+
+    @NotNull(message = "El id de la persona es obligatorio")
     private Long idPersona;
+
+    @NotNull(message = "El id de la especialidad es obligatorio")
     private Long idEspecialidad;
+
+    @NotBlank(message = "La matrícula profesional es obligatoria")
     private String matriculaProfesional;
+
+    @NotNull(message = "El id del estado es obligatorio")
     private Long idEstado;
 
     // Getters y Setters
@@ -18,7 +30,7 @@ public class ProfesionalDTO {
         this.id = id;
     }
 
-    public Long getIdPersona() { //
+    public Long getIdPersona() {
         return idPersona;
     }
 
