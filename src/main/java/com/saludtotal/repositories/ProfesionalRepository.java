@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProfesionalRepository extends JpaRepository<Profesional, Long> {
-    // Aquí podés agregar consultas personalizadas si las necesitas luego
 }

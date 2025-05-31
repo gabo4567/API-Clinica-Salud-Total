@@ -42,5 +42,4 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
 
     // Turnos atendidos por profesional en un rango de fechas
     long countByProfesionalAndEstadoAndFechaHoraBetween(Persona profesional, Estado estado, LocalDateTime inicio, LocalDateTime fin);
-
 }

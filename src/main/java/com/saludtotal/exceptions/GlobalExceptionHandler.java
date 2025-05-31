@@ -31,5 +31,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-    // Puedes agregar más handlers para otras excepciones si querés
 }

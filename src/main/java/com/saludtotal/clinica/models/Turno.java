@@ -49,7 +49,6 @@ public class Turno {
 
     // Getters y setters...
 
-    // (Igual que tenés, cambiando idEstado por Estado estado)
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 

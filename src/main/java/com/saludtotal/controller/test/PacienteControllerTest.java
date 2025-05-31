@@ -151,7 +151,7 @@ class PacienteControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    // --- Tests nuevos para casos exitosos ---
+    // --- Tests para casos exitosos ---
 
     @Test
     void obtenerPacientePorId_Existente_DeberiaRetornar200ConPaciente() throws Exception {

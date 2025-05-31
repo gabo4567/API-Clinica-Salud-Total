@@ -119,7 +119,6 @@ public class TurnoService {
         // Validar persona profesional
         Persona profesional = validarPersona(profesionalId);
 
-        // Buscar estado "Atendido" (debes usar el nombre exacto que usas en BD)
         Estado estadoAtendido = estadoRepository.findByNombre("Atendido")
                 .orElseThrow(() -> new RecursoNoEncontradoException("Estado 'Atendido' no encontrado"));
 

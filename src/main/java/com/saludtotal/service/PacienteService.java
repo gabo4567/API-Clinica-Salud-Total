@@ -8,8 +8,6 @@ import com.saludtotal.exceptions.RecursoNoEncontradoException;
 import com.saludtotal.repositories.PacienteRepository;
 import com.saludtotal.repositories.PersonaRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
