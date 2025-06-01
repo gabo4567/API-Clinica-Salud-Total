@@ -148,12 +148,12 @@ class EspecialidadServiceTest {
         especialidad.setNombre("Cardiología");
         especialidad.setDescripcion("Estudio del corazón");
 
-        Estado estado = new Estado();
-        estado.setIdEstado(10L);
+        Estado estado = new Estado(10L, "activo");  // id=10, nombre=activo
         especialidad.setEstado(estado);
 
         return especialidad;
     }
+
 
     private EspecialidadDTO crearEspecialidadDTO() {
         EspecialidadDTO dto = new EspecialidadDTO();

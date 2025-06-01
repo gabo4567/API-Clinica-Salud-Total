@@ -31,6 +31,9 @@ public class Persona {
     @Column(name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
 
+    // Constructor vacío
+    public Persona() {
+    }
 
     // Getters y Setters
 

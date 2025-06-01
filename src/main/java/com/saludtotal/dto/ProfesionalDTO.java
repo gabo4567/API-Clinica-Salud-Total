@@ -20,6 +20,10 @@ public class ProfesionalDTO {
     @NotNull(message = "El id del estado es obligatorio")
     private Long idEstado;
 
+    // Constructor vacío
+    public ProfesionalDTO() {
+    }
+
     // Getters y Setters
 
     public Long getId() {

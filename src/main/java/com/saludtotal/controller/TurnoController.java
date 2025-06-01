@@ -2,6 +2,8 @@ package com.saludtotal.controller;
 
 import com.saludtotal.clinica.models.Turno;
 import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
+import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
+import com.saludtotal.dto.TasaCancelacionPorEspecialidadDTO;
 import com.saludtotal.service.TurnoService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -95,5 +97,24 @@ public class TurnoController {
         return ResponseEntity.ok(resultado);
     }
 
+    // Turnos cancelados y reprogramados
+    @GetMapping("/reportes/turnos-cancelados-reprogramados")
+    public ResponseEntity<ReporteTurnosCanceladosYReprogramadosDTO> getReporteCanceladosYReprogramados(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+
+        ReporteTurnosCanceladosYReprogramadosDTO resultado =
+                turnoService.obtenerReporteCanceladosYReprogramados(fechaInicio, fechaFin);
+        return ResponseEntity.ok(resultado);
+    }
+
+    @GetMapping("/reportes/tasa-cancelacion-por-especialidad")
+    public ResponseEntity<List<TasaCancelacionPorEspecialidadDTO>> obtenerTasaCancelacionPorEspecialidad(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+
+        List<TasaCancelacionPorEspecialidadDTO> resultado = turnoService.obtenerTasaCancelacionPorEspecialidad(fechaInicio, fechaFin);
+        return ResponseEntity.ok(resultado);
+    }
 
 }

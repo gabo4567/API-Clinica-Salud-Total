@@ -26,6 +26,10 @@ public class TurnoDTO {
 
     private String observaciones;
 
+    // Constructor vacío
+    public TurnoDTO(){
+    }
+
     // Getters y Setters
 
     public Long getId() {

@@ -21,6 +21,16 @@ public class Estado {
     @JoinColumn(name = "id_entidad", nullable = false)
     private Entidad entidad;
 
+    // Constructor vacío
+    public Estado() {
+    }
+
+    // Constructor
+    public Estado(Long idEstado, String nombre) {
+        this.idEstado = idEstado;
+        this.nombre = nombre;
+    }
+
     // Getters y Setters
 
     public Long getIdEstado() {

@@ -2,6 +2,8 @@ package com.saludtotal.service.test;
 
 import com.saludtotal.clinica.models.*;
 import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
+import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
+import com.saludtotal.dto.TasaCancelacionPorEspecialidadDTO;
 import com.saludtotal.exceptions.RecursoNoEncontradoException;
 import com.saludtotal.repositories.*;
 import com.saludtotal.service.TurnoService;
@@ -13,9 +15,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalTime;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -247,6 +248,106 @@ class TurnoServiceTest {
 
         assertEquals("Estado 'Atendido' no encontrado", ex.getMessage());
     }
+
+    @Test
+    void testObtenerCantidadTurnosCanceladosYReprogramadosEnPeriodo_Exitoso() {
+        LocalDate inicio = LocalDate.of(2024, 1, 1);
+        LocalDate fin = LocalDate.of(2024, 1, 31);
+
+        Estado estadoCancelado = new Estado();
+        estadoCancelado.setIdEstado(10L);
+        estadoCancelado.setNombre("Cancelado");
+
+        Estado estadoReprogramado = new Estado();
+        estadoReprogramado.setIdEstado(11L);
+        estadoReprogramado.setNombre("Reprogramado");
+
+        when(estadoRepository.findByNombre("Cancelado")).thenReturn(Optional.of(estadoCancelado));
+        when(estadoRepository.findByNombre("Reprogramado")).thenReturn(Optional.of(estadoReprogramado));
+        when(turnoRepository.countByEstadoAndFechaHoraBetween(eq(estadoCancelado), any(), any())).thenReturn(3L);
+        when(turnoRepository.countByEstadoAndFechaHoraBetween(eq(estadoReprogramado), any(), any())).thenReturn(2L);
+
+        ReporteTurnosCanceladosYReprogramadosDTO resultado = turnoService
+                .obtenerReporteCanceladosYReprogramados(inicio, fin);
+
+        assertEquals(3, resultado.getCantidadCancelados());
+        assertEquals(2, resultado.getCantidadReprogramados());
+    }
+
+    @Test
+    void testObtenerCantidadTurnosCanceladosYReprogramadosEnPeriodo_EstadoCanceladoNoEncontrado() {
+        LocalDate inicio = LocalDate.of(2024, 1, 1);
+        LocalDate fin = LocalDate.of(2024, 1, 31);
+
+        when(estadoRepository.findByNombre("Cancelado")).thenReturn(Optional.empty());
+
+        RecursoNoEncontradoException exception = assertThrows(RecursoNoEncontradoException.class, () ->
+                turnoService.obtenerReporteCanceladosYReprogramados(inicio, fin)
+        );
+
+        assertEquals("Estado 'Cancelado' no encontrado", exception.getMessage());
+    }
+
+    @Test
+    void testObtenerCantidadTurnosCanceladosYReprogramadosEnPeriodo_EstadoReprogramadoNoEncontrado() {
+        LocalDate inicio = LocalDate.of(2024, 1, 1);
+        LocalDate fin = LocalDate.of(2024, 1, 31);
+
+        Estado estadoCancelado = new Estado();
+        estadoCancelado.setIdEstado(10L);
+        estadoCancelado.setNombre("Cancelado");
+
+        when(estadoRepository.findByNombre("Cancelado")).thenReturn(Optional.of(estadoCancelado));
+        when(estadoRepository.findByNombre("Reprogramado")).thenReturn(Optional.empty());
+
+        RecursoNoEncontradoException exception = assertThrows(RecursoNoEncontradoException.class, () ->
+                turnoService.obtenerReporteCanceladosYReprogramados(inicio, fin)
+        );
+
+        assertEquals("Estado 'Reprogramado' no encontrado", exception.getMessage());
+    }
+
+    @Test
+    void obtenerTasaCancelacionPorEspecialidad_Exitoso() {
+        LocalDate fechaInicioDate = LocalDate.of(2025, 1, 1);
+        LocalDate fechaFinDate = LocalDate.of(2025, 12, 31);
+        LocalDate fechaInicio = LocalDate.from(fechaInicioDate.atStartOfDay());
+        LocalDateTime fechaFin = fechaFinDate.atTime(LocalTime.MAX);
+
+        // Mockeo la respuesta del repo con List<Object[]> (tipo esperado por el repo)
+        List<Object[]> listaSimulada = new ArrayList<>();
+        listaSimulada.add(new Object[]{"Pediatría", 30.0});
+        listaSimulada.add(new Object[]{"Cardiología", 10.0});
+
+        when(turnoRepository.obtenerDatosCancelacionPorEspecialidad(fechaInicio, LocalDate.from(fechaFin)))
+                .thenReturn(listaSimulada);
+
+        // Ejecutar metodo service que convierte la lista Object a dto
+        List<TasaCancelacionPorEspecialidadDTO> resultado = turnoService.obtenerTasaCancelacionPorEspecialidad(fechaInicioDate, fechaFinDate);
+
+        assertNotNull(resultado);
+        assertEquals(2, resultado.size());
+        assertEquals("Pediatría", resultado.get(0).getEspecialidad());
+        assertEquals(30.0, resultado.get(0).getTasaCancelacion());
+    }
+
+    @Test
+    void obtenerTasaCancelacionPorEspecialidad_SinResultados() {
+        LocalDate fechaInicioDate = LocalDate.of(2025, 1, 1);
+        LocalDate fechaFinDate = LocalDate.of(2025, 12, 31);
+        LocalDate fechaInicio = LocalDate.from(fechaInicioDate.atStartOfDay());
+        LocalDateTime fechaFin = fechaFinDate.atTime(LocalTime.MAX);
+
+        // El repositorio devuelve una lista vacía
+        when(turnoRepository.obtenerDatosCancelacionPorEspecialidad(fechaInicio, LocalDate.from(fechaFin)))
+                .thenReturn(Collections.emptyList());
+
+        List<TasaCancelacionPorEspecialidadDTO> resultado = turnoService.obtenerTasaCancelacionPorEspecialidad(fechaInicioDate, fechaFinDate);
+
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty(), "La lista de tasas de cancelación debería estar vacía");
+    }
+
 
 
 }

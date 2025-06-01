@@ -17,6 +17,10 @@ public class EspecialidadDTO {
     @NotNull(message = "El id del estado es obligatorio")
     private Long idEstado;
 
+    // Constructor vacío
+    public EspecialidadDTO() {
+    }
+
     // Getters y Setters
 
     public Long getIdEspecialidad() {

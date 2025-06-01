@@ -45,6 +45,10 @@ public class RegistroPacienteDTO {
     @NotNull(message = "El ID de estado del paciente no puede ser nulo")
     private Long idEstadoPaciente;
 
+    // Constructor vacío
+    public RegistroPacienteDTO() {
+    }
+
     // === Getters y Setters ===
 
     public String getDni() { return dni; }

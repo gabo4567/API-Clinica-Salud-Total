@@ -4,7 +4,10 @@ import com.saludtotal.clinica.models.Turno;
 import com.saludtotal.clinica.models.Estado;
 import com.saludtotal.clinica.models.Persona;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -42,4 +45,24 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
 
     // Turnos atendidos por profesional en un rango de fechas
     long countByProfesionalAndEstadoAndFechaHoraBetween(Persona profesional, Estado estado, LocalDateTime inicio, LocalDateTime fin);
+
+    // Turnos cancelados y reprogramados
+    long countByEstadoAndFechaHoraBetween(Estado estado, LocalDateTime inicio, LocalDateTime fin);
+
+    // Datos de cancelación por especialidad en un rango de fechas
+    @Query(value = """
+        SELECT 
+            e.nombre AS especialidad,
+            COUNT(t.id_turno) AS totalTurnos,
+            SUM(CASE WHEN est.nombre = 'Cancelado' AND est.id_entidad = 5 THEN 1 ELSE 0 END) AS turnosCancelados
+        FROM turno t
+        JOIN profesional p ON t.id_profesional = p.id_persona
+        JOIN especialidad e ON p.id_especialidad = e.id_especialidad
+        JOIN estado est ON t.id_estado = est.id_estado
+        WHERE t.fecha_hora BETWEEN :fechaInicio AND :fechaFin
+        GROUP BY e.nombre
+        """, nativeQuery = true)
+    List<Object[]> obtenerDatosCancelacionPorEspecialidad(
+            @Param("fechaInicio") LocalDate fechaInicio,
+            @Param("fechaFin") LocalDate fechaFin);
 }

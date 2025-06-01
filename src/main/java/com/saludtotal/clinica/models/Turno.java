@@ -47,7 +47,11 @@ public class Turno {
     @Column(name = "ultima_modificacion")
     private LocalDateTime ultimaModificacion;
 
-    // Getters y setters...
+    // Constructor vacío
+    public Turno() {
+    }
+
+    // Getters y setters
 
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }

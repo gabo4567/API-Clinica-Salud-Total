@@ -4,6 +4,8 @@ import com.saludtotal.clinica.models.Estado;
 import com.saludtotal.clinica.models.Persona;
 import com.saludtotal.clinica.models.Turno;
 import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
+import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
+import com.saludtotal.dto.TasaCancelacionPorEspecialidadDTO;
 import com.saludtotal.exceptions.RecursoNoEncontradoException;
 import com.saludtotal.repositories.TurnoRepository;
 import com.saludtotal.repositories.PacienteRepository;
@@ -12,9 +14,11 @@ import com.saludtotal.repositories.EstadoRepository;
 
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -128,6 +132,40 @@ public class TurnoService {
         long cantidad = turnoRepository.countByProfesionalAndEstadoAndFechaHoraBetween(profesional, estadoAtendido, inicio, fin);
 
         return new ReporteTurnosAtendidosDTO(Math.toIntExact(profesional.getId()), profesional.getNombre(), cantidad);
+    }
+
+    // Reportes de turnos cancelados y reprogramados
+    public ReporteTurnosCanceladosYReprogramadosDTO obtenerReporteCanceladosYReprogramados(LocalDate fechaInicio, LocalDate fechaFin) {
+        Estado estadoCancelado = estadoRepository.findByNombre("Cancelado")
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estado 'Cancelado' no encontrado"));
+
+        Estado estadoReprogramado = estadoRepository.findByNombre("Reprogramado")
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estado 'Reprogramado' no encontrado"));
+
+        LocalDateTime inicio = fechaInicio.atStartOfDay();
+        LocalDateTime fin = fechaFin.atTime(23, 59, 59);
+
+        long cancelados = turnoRepository.countByEstadoAndFechaHoraBetween(estadoCancelado, inicio, fin);
+        long reprogramados = turnoRepository.countByEstadoAndFechaHoraBetween(estadoReprogramado, inicio, fin);
+
+        return new ReporteTurnosCanceladosYReprogramadosDTO(cancelados, reprogramados);
+    }
+
+    // Tasa de cancelación de turnos por especialidad
+    public List<TasaCancelacionPorEspecialidadDTO> obtenerTasaCancelacionPorEspecialidad(LocalDate fechaInicio, LocalDate fechaFin) {
+        LocalDateTime inicio = fechaInicio.atStartOfDay();
+        LocalDateTime fin = fechaFin.atTime(LocalTime.MAX);
+
+        List<Object[]> resultados = turnoRepository.obtenerDatosCancelacionPorEspecialidad(fechaInicio, fechaFin);
+
+        List<TasaCancelacionPorEspecialidadDTO> listaDTO = new ArrayList<>();
+        for (Object[] fila : resultados) {
+            TasaCancelacionPorEspecialidadDTO dto = new TasaCancelacionPorEspecialidadDTO();
+            dto.setEspecialidad((String) fila[0]);
+            dto.setTasaCancelacion(((Number) fila[1]).doubleValue());
+            listaDTO.add(dto);
+        }
+        return listaDTO;
     }
 
     // ==== Métodos auxiliares ====

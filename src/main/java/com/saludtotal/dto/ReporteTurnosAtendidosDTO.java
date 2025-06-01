@@ -5,6 +5,11 @@ public class ReporteTurnosAtendidosDTO {
     private String nombreProfesional;
     private long cantidadTurnosAtendidos;
 
+    // Constructor vacío
+    public ReporteTurnosAtendidosDTO() {
+    }
+
+    // Constructor
     public ReporteTurnosAtendidosDTO(Integer idProfesional, String nombreProfesional, long cantidadTurnosAtendidos) {
         this.idProfesional = idProfesional;
         this.nombreProfesional = nombreProfesional;

@@ -21,6 +21,10 @@ public class Especialidad {
     @JoinColumn(name = "id_estado")
     private Estado estado;
 
+    // Constructor vacío
+    public Especialidad () {
+    }
+
     // Getters y Setters
 
     public Long getIdEspecialidad() {

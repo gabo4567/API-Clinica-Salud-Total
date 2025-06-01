@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saludtotal.clinica.models.Turno;
 import com.saludtotal.controller.TurnoController;
 import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
+import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
+import com.saludtotal.dto.TasaCancelacionPorEspecialidadDTO;
+import com.saludtotal.exceptions.GlobalExceptionHandler;
 import com.saludtotal.exceptions.RecursoNoEncontradoException;
 import com.saludtotal.service.TurnoService;
 import org.junit.jupiter.api.DisplayName;
@@ -12,11 +15,14 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TurnoController.class)
+@Import(GlobalExceptionHandler.class)
 class TurnoControllerTest {
 
     @Autowired
@@ -277,5 +284,92 @@ class TurnoControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Estado 'Atendido' no encontrado"));
     }
+
+    @Test
+    void testGetCantidadTurnosCanceladosYReprogramados_Exitoso() throws Exception {
+        String fechaInicio = "2024-01-01";
+        String fechaFin = "2024-01-31";
+
+        ReporteTurnosCanceladosYReprogramadosDTO dto = new ReporteTurnosCanceladosYReprogramadosDTO(3, 2);
+
+        when(turnoService.obtenerReporteCanceladosYReprogramados(
+                LocalDate.parse(fechaInicio), LocalDate.parse(fechaFin)))
+                .thenReturn(dto);
+
+        mockMvc.perform(get("/api/turnos/reportes/turnos-cancelados-reprogramados")
+                        .param("fechaInicio", fechaInicio)
+                        .param("fechaFin", fechaFin))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cantidadCancelados").value(3))
+                .andExpect(jsonPath("$.cantidadReprogramados").value(2));
+    }
+
+    @Test
+    void testGetCantidadTurnosCanceladosYReprogramados_EstadoNoEncontrado() throws Exception {
+        String fechaInicio = "2024-01-01";
+        String fechaFin = "2024-01-31";
+
+        when(turnoService.obtenerReporteCanceladosYReprogramados(
+                LocalDate.parse(fechaInicio), LocalDate.parse(fechaFin)))
+                .thenThrow(new RecursoNoEncontradoException("Estado 'Cancelado' no encontrado"));
+
+        mockMvc.perform(get("/api/turnos/reportes/turnos-cancelados-reprogramados")
+                        .param("fechaInicio", fechaInicio)
+                        .param("fechaFin", fechaFin))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.message").value("Estado 'Cancelado' no encontrado"));
+    }
+
+    @Test
+    void testObtenerTasaCancelacionPorEspecialidad_Exitoso() throws Exception {
+        String fechaInicio = "2025-01-01";
+        String fechaFin = "2025-12-31";
+
+        TasaCancelacionPorEspecialidadDTO dto1 = new TasaCancelacionPorEspecialidadDTO();
+        dto1.setEspecialidad("Pediatría");
+        dto1.setTasaCancelacion(30.0);
+
+        TasaCancelacionPorEspecialidadDTO dto2 = new TasaCancelacionPorEspecialidadDTO();
+        dto2.setEspecialidad("Cardiología");
+        dto2.setTasaCancelacion(10.0);
+
+        List<TasaCancelacionPorEspecialidadDTO> mockLista = Arrays.asList(dto1, dto2);
+
+        when(turnoService.obtenerTasaCancelacionPorEspecialidad(LocalDate.parse(fechaInicio), LocalDate.parse(fechaFin)))
+                .thenReturn(mockLista);
+
+        mockMvc.perform(get("/api/turnos/reportes/tasa-cancelacion-por-especialidad")
+                        .param("fechaInicio", fechaInicio)
+                        .param("fechaFin", fechaFin))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.size()").value(2))
+                .andExpect(jsonPath("$[0].especialidad").value("Pediatría"))
+                .andExpect(jsonPath("$[0].tasaCancelacion").value(30.0))
+                .andExpect(jsonPath("$[1].especialidad").value("Cardiología"))
+                .andExpect(jsonPath("$[1].tasaCancelacion").value(10.0));
+    }
+
+    @Test
+    void testObtenerTasaCancelacionPorEspecialidad_NoExitoso_SinResultados() throws Exception {
+        LocalDate fechaInicio = LocalDate.of(2025, 1, 1);
+        LocalDate fechaFin = LocalDate.of(2025, 12, 31);
+
+        // Simular que no hay datos para ese rango
+        when(turnoService.obtenerTasaCancelacionPorEspecialidad(fechaInicio, fechaFin))
+                .thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/turnos/reportes/tasa-cancelacion-por-especialidad")
+                        .param("fechaInicio", fechaInicio.toString())
+                        .param("fechaFin", fechaFin.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().json("[]"));
+    }
+
+
+
 
 }

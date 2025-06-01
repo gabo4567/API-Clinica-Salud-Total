@@ -23,7 +23,9 @@ public class Paciente {
     @Column(name = "id_estado")
     private int idEstado;
 
-    public Paciente() {}
+    // Constructor vacío
+    public Paciente() {
+    }
 
     public Paciente(int idPersona, String obraSocial, int idEstado) {
         this.persona = persona;

@@ -17,6 +17,10 @@ public class Entidad {
     @Column(length = 255)
     private String descripcion;
 
+    // Constructor vacío
+    public Entidad () {
+    }
+
     // Getters y Setters
 
     public Long getId() {

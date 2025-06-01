@@ -26,6 +26,10 @@ public class Profesional {
     @JoinColumn(name = "id_estado", nullable = false)
     private Estado estado;
 
+    // Constructor vacío
+    public Profesional() {
+    }
+
     // Getters y Setters
 
     public Long getIdProfesional() {
