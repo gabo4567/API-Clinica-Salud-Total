@@ -14,7 +14,7 @@ Proyecto desarrollado como parte de la materia **Metodología de Sistemas I** de
 
 Esta API RESTful gestiona el funcionamiento de la clínica “Salud Total”. Permite administrar pacientes, profesionales, especialidades, turnos médicos, reportes administrativos y consultas desde el sitio web.
 
-La arquitectura está pensada para ser modular, extensible e integrable fácilmente con frontends web o móviles.
+La arquitectura está pensada para ser modular, extensible e integrable fácilmente con frontends web o de escritorio.
 
 ---
 
