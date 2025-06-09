@@ -37,6 +37,10 @@ public class RegistroPacienteDTO {
     @NotNull(message = "La fecha de nacimiento no puede ser nula")
     private LocalDate fechaNacimiento;
 
+    @NotBlank(message = "La contraseña no puede estar vacía")
+    @Size(min = 6, max = 30, message = "La contraseña debe tener entre 6 y 30 caracteres")
+    private String contrasenia;
+
     // === Datos de Paciente ===
 
     @NotBlank(message = "La obra social no puede estar vacía")
@@ -80,6 +84,9 @@ public class RegistroPacienteDTO {
 
     public LocalDate getFechaNacimiento() { return fechaNacimiento; }
     public void setFechaNacimiento(LocalDate fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
+
+    public String getContrasenia() { return contrasenia; }
+    public void setContrasenia(String contrasenia) { this.contrasenia = contrasenia; }
 
     public String getObraSocial() { return obraSocial; }
     public void setObraSocial(String obraSocial) { this.obraSocial = obraSocial; }

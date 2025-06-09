@@ -41,8 +41,9 @@ public class ProfesionalService {
     public ProfesionalDTO actualizarProfesional(Long id, ProfesionalDTO dto) {
         Profesional profesionalExistente = profesionalRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Profesional no encontrado con ID: " + id));
-        // Actualizar campos
+
         profesionalExistente.setMatriculaProfesional(dto.getMatriculaProfesional());
+
         Especialidad especialidad = new Especialidad();
         especialidad.setIdEspecialidad(dto.getIdEspecialidad());
         profesionalExistente.setEspecialidad(especialidad);
@@ -53,6 +54,7 @@ public class ProfesionalService {
 
         Persona persona = new Persona();
         persona.setId(dto.getIdPersona());
+        persona.setContrasenia(dto.getContrasenia()); // 👈 AGREGADO
         profesionalExistente.setPersona(persona);
 
         Profesional actualizado = profesionalRepository.save(profesionalExistente);
@@ -73,15 +75,18 @@ public class ProfesionalService {
         dto.setIdEspecialidad(profesional.getEspecialidad().getIdEspecialidad());
         dto.setMatriculaProfesional(profesional.getMatriculaProfesional());
         dto.setIdEstado(profesional.getEstado().getIdEstado());
+        // NO se devuelve la contraseña por seguridad
         return dto;
     }
 
+    // Convertir DTO a entidad
     private Profesional convertirAProfesional(ProfesionalDTO dto) {
         Profesional profesional = new Profesional();
         profesional.setIdProfesional(dto.getId());
 
         Persona persona = new Persona();
         persona.setId(dto.getIdPersona());
+        persona.setContrasenia(dto.getContrasenia());
         profesional.setPersona(persona);
 
         Especialidad especialidad = new Especialidad();
@@ -96,5 +101,4 @@ public class ProfesionalService {
 
         return profesional;
     }
-
 }

@@ -11,6 +11,9 @@ public class ProfesionalDTO {
     @NotNull(message = "El id de la persona es obligatorio")
     private Long idPersona;
 
+    @NotBlank(message = "La contraseña es obligatoria")
+    private String contrasenia;
+
     @NotNull(message = "El id de la especialidad es obligatorio")
     private Long idEspecialidad;
 
@@ -54,9 +57,7 @@ public class ProfesionalDTO {
         return matriculaProfesional;
     }
 
-    public void setMatriculaProfesional(String matriculaProfesional) {
-        this.matriculaProfesional = matriculaProfesional;
-    }
+    public void setMatriculaProfesional(String matriculaProfesional) {this.matriculaProfesional = matriculaProfesional;}
 
     public Long getIdEstado() {
         return idEstado;
@@ -65,4 +66,8 @@ public class ProfesionalDTO {
     public void setIdEstado(Long idEstado) {
         this.idEstado = idEstado;
     }
+
+    public String getContrasenia() {return contrasenia;}
+
+    public void setContrasenia(String contrasenia) {this.contrasenia = contrasenia;}
 }

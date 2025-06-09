@@ -10,6 +10,7 @@ import com.saludtotal.repositories.PersonaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PacienteService {
@@ -31,7 +32,6 @@ public class PacienteService {
             throw new EntidadYaExisteException("Ya existe un paciente registrado con el DNI " + dto.getDni());
         }
 
-
         Persona persona = new Persona();
         persona.setDni(dto.getDni());
         persona.setNombre(dto.getNombre());
@@ -43,6 +43,9 @@ public class PacienteService {
         persona.setIdEspecialidad(dto.getIdEspecialidad());
         persona.setIdEstado(dto.getIdEstadoPersona());
         persona.setFechaNacimiento(dto.getFechaNacimiento());
+
+        // ✅ Guardamos la contraseña en Persona
+        persona.setContrasenia(dto.getContrasenia());
 
         Persona personaGuardada = personaRepository.save(persona);
 
@@ -68,6 +71,9 @@ public class PacienteService {
         persona.setIdEspecialidad(dto.getIdEspecialidad());
         persona.setIdEstado(dto.getIdEstadoPersona());
         persona.setFechaNacimiento(dto.getFechaNacimiento());
+
+        // Actualizar la contraseña también
+        persona.setContrasenia(dto.getContrasenia());
 
         Persona personaActualizada = personaRepository.save(persona);
 
@@ -104,5 +110,11 @@ public class PacienteService {
     public List<Paciente> buscarPorApellido(String apellido) {
         return pacienteRepository.findByPersonaApellidoContainingIgnoreCase(apellido);
     }
+
+    public Optional<Paciente> login(String email, String contrasenia) {
+        return pacienteRepository.findByPersonaEmail(email)
+                .filter(p -> p.getPersona().getContrasenia().equals(contrasenia));
+    }
+
 
 }

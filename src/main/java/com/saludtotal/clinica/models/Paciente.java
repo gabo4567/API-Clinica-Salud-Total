@@ -65,5 +65,4 @@ public class Paciente {
         this.persona = persona;
     }
 
-
 }
