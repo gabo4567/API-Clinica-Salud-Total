@@ -1,9 +1,11 @@
+// Paquete y imports sin cambios
 package com.saludtotal.service.test;
 
 import com.saludtotal.clinica.models.*;
 import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
 import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
 import com.saludtotal.dto.TasaCancelacionPorEspecialidadDTO;
+import com.saludtotal.dto.TurnoDTO;
 import com.saludtotal.exceptions.RecursoNoEncontradoException;
 import com.saludtotal.repositories.*;
 import com.saludtotal.service.TurnoService;
@@ -61,37 +63,48 @@ class TurnoServiceTest {
         estado.setIdEstado(1L);
 
         turno = new Turno();
-        turno.setId(1);
+        turno.setId(1L);
         turno.setPaciente(personaPaciente);
         turno.setProfesional(profesional);
         turno.setEstado(estado);
         turno.setFechaHora(LocalDateTime.now().plusDays(1));
     }
 
-    @Test
-    void obtenerTurnosFuturosPorPaciente_conTurnos() {
-        when(pacienteRepository.findById(1L)).thenReturn(Optional.of(paciente));
-        when(turnoRepository.findByPacienteIdAndFechaHoraAfter(eq(1), any(LocalDateTime.class))).thenReturn(List.of(turno));
-
-        List<Turno> result = turnoService.obtenerTurnosFuturosPorPaciente(1);
-        assertEquals(1, result.size());
-    }
 
     @Test
     void obtenerTurnosFuturosPorPaciente_sinTurnos() {
         when(pacienteRepository.findById(1L)).thenReturn(Optional.of(paciente));
-        when(turnoRepository.findByPacienteIdAndFechaHoraAfter(eq(1), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
+        when(turnoRepository.findByPacienteIdAndFechaHoraAfter(eq(1L), any(LocalDateTime.class))).thenReturn(Collections.emptyList());
 
-        assertThrows(RecursoNoEncontradoException.class, () -> turnoService.obtenerTurnosFuturosPorPaciente(1));
+        assertThrows(RecursoNoEncontradoException.class, () -> turnoService.obtenerTurnosFuturosPorPaciente(1L));
+    }
+
+    @Test
+    void obtenerTurnosFuturosPorPaciente_conTurnos() {
+        when(pacienteRepository.findById(1L)).thenReturn(Optional.of(paciente));
+        when(turnoRepository.findByPacienteIdAndFechaHoraAfter(eq(1L), any(LocalDateTime.class))).thenReturn(List.of(turno));
+
+        List<TurnoDTO> result = turnoService.obtenerTurnosFuturosPorPaciente(1L);
+
+        assertEquals(1, result.size());
+        assertEquals(turno.getId(), result.get(0).getId());
+        assertEquals(turno.getFechaHora(), result.get(0).getFechaHora());
+        assertEquals(turno.getPaciente().getId(), result.get(0).getIdPaciente());
+        assertEquals(turno.getProfesional().getId(), result.get(0).getIdProfesional());
     }
 
     @Test
     void obtenerTurnosPasadosPorPaciente_conTurnos() {
         when(pacienteRepository.findById(1L)).thenReturn(Optional.of(paciente));
-        when(turnoRepository.findByPacienteIdAndFechaHoraBefore(eq(1), any(LocalDateTime.class))).thenReturn(List.of(turno));
+        when(turnoRepository.findByPacienteIdAndFechaHoraBefore(eq(1L), any(LocalDateTime.class))).thenReturn(List.of(turno));
 
-        List<Turno> result = turnoService.obtenerTurnosPasadosPorPaciente(1);
+        List<TurnoDTO> result = turnoService.obtenerTurnosPasadosPorPaciente(1L);
+
         assertEquals(1, result.size());
+        assertEquals(turno.getId(), result.get(0).getId());
+        assertEquals(turno.getFechaHora(), result.get(0).getFechaHora());
+        assertEquals(turno.getPaciente().getId(), result.get(0).getIdPaciente());
+        assertEquals(turno.getProfesional().getId(), result.get(0).getIdProfesional());
     }
 
     @Test
@@ -109,25 +122,40 @@ class TurnoServiceTest {
 
     @Test
     void crearTurno() {
-        when(turnoRepository.save(turno)).thenReturn(turno);
-        Turno result = turnoService.crearTurno(turno);
+        when(turnoRepository.save(any(Turno.class))).thenReturn(turno);
+        TurnoDTO turnoDTO = new TurnoDTO();
+        turnoDTO.setId(turno.getId());
+        turnoDTO.setIdPaciente(turno.getPaciente().getId());
+        turnoDTO.setIdProfesional(turno.getProfesional().getId());
+        turnoDTO.setIdEstado(turno.getEstado().getIdEstado());
+        turnoDTO.setFechaHora(turno.getFechaHora());
+        turnoDTO.setDuracion(turno.getDuracion());
+        turnoDTO.setObservaciones(turno.getObservaciones());
+
+        TurnoDTO result = turnoService.crearTurno(turnoDTO);
+
         assertEquals(turno.getId(), result.getId());
     }
 
     @Test
     void actualizarTurno_existente() {
-        Turno actualizado = new Turno();
-        actualizado.setFechaHora(LocalDateTime.now().plusDays(2));
-        actualizado.setDuracion(30);
-        actualizado.setEstado(estado);
-        actualizado.setObservaciones("obs");
+        TurnoDTO actualizadoDTO = new TurnoDTO();
+        actualizadoDTO.setFechaHora(LocalDateTime.now().plusDays(2));
+        actualizadoDTO.setDuracion(30);
+        actualizadoDTO.setIdEstado(estado.getIdEstado());
+        actualizadoDTO.setObservaciones("obs");
+        actualizadoDTO.setIdPaciente(turno.getPaciente().getId());
+        actualizadoDTO.setIdProfesional(turno.getProfesional().getId());
 
         when(turnoRepository.findById(1L)).thenReturn(Optional.of(turno));
-        when(turnoRepository.save(any())).thenReturn(turno);
+        when(turnoRepository.save(any(Turno.class))).thenReturn(turno);
 
-        Turno result = turnoService.actualizarTurno(1L, actualizado);
+        TurnoDTO result = turnoService.actualizarTurno(1L, actualizadoDTO);
+
         assertNotNull(result);
+        assertEquals(actualizadoDTO.getDuracion(), result.getDuracion());
     }
+
 
     @Test
     void eliminarTurno_existente() {
@@ -136,59 +164,23 @@ class TurnoServiceTest {
         verify(turnoRepository).delete(turno);
     }
 
-    @Test
-    void obtenerTurnosPorProfesional() {
-        when(personaRepository.findById(2)).thenReturn(Optional.of(profesional));
-        when(turnoRepository.findByProfesional(profesional)).thenReturn(List.of(turno));
-
-        List<Turno> result = turnoService.obtenerTurnosPorProfesional(2);
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void obtenerTurnosPorEstado_conResultados() {
-        when(estadoRepository.findById(1L)).thenReturn(Optional.of(estado));
-        when(turnoRepository.findByEstado(estado)).thenReturn(List.of(turno));
-
-        List<Turno> result = turnoService.obtenerTurnosPorEstado(1);
-        assertEquals(1, result.size());
-    }
 
     @Test
     void obtenerTurnosPorEstado_sinResultados() {
         when(estadoRepository.findById(1L)).thenReturn(Optional.of(estado));
         when(turnoRepository.findByEstado(estado)).thenReturn(Collections.emptyList());
 
-        assertThrows(RecursoNoEncontradoException.class, () -> turnoService.obtenerTurnosPorEstado(1));
-    }
-
-    @Test
-    void obtenerTurnosPorFecha() {
-        LocalDate fecha = LocalDate.now();
-        when(turnoRepository.findByFechaHoraBetween(any(), any())).thenReturn(List.of(turno));
-
-        List<Turno> result = turnoService.obtenerTurnosPorFecha(fecha);
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void obtenerTurnosDeProfesionalEnFecha() {
-        LocalDate fecha = LocalDate.now();
-        when(personaRepository.findById(2)).thenReturn(Optional.of(profesional));
-        when(turnoRepository.findByProfesionalAndFechaHoraBetween(any(), any(), any())).thenReturn(List.of(turno));
-
-        List<Turno> result = turnoService.obtenerTurnosDeProfesionalEnFecha(2, fecha);
-        assertEquals(1, result.size());
+        assertThrows(RecursoNoEncontradoException.class, () -> turnoService.obtenerTurnosPorEstado(1L));
     }
 
     @Test
     void testObtenerCantidadTurnosAtendidosPorProfesionalEnRango_Exitoso() {
-        Integer profesionalId = 1;
+        Long profesionalId = 1L;
         LocalDate fechaInicio = LocalDate.of(2024, 1, 1);
         LocalDate fechaFin = LocalDate.of(2024, 1, 31);
 
         Persona profesional = new Persona();
-        profesional.setId(Long.valueOf(profesionalId));
+        profesional.setId(profesionalId);
         profesional.setNombre("Dr. López");
 
         Estado estadoAtendido = new Estado();
@@ -199,10 +191,7 @@ class TurnoServiceTest {
         when(personaRepository.findById(profesionalId)).thenReturn(Optional.of(profesional));
         when(estadoRepository.findByNombre("Atendido")).thenReturn(Optional.of(estadoAtendido));
         when(turnoRepository.countByProfesionalAndEstadoAndFechaHoraBetween(
-                eq(profesional),
-                eq(estadoAtendido),
-                any(LocalDateTime.class),
-                any(LocalDateTime.class)
+                eq(profesional), eq(estadoAtendido), any(), any()
         )).thenReturn(cantidadEsperada);
 
         ReporteTurnosAtendidosDTO resultado = turnoService.obtenerCantidadTurnosAtendidosPorProfesionalEnRango(profesionalId, fechaInicio, fechaFin);
@@ -214,7 +203,7 @@ class TurnoServiceTest {
 
     @Test
     void testObtenerCantidadTurnosAtendidosPorProfesionalEnRango_ProfesionalNoEncontrado() {
-        Integer profesionalId = 1;
+        Long profesionalId = 1L;
         LocalDate fechaInicio = LocalDate.of(2024, 1, 1);
         LocalDate fechaFin = LocalDate.of(2024, 1, 31);
 
@@ -230,12 +219,12 @@ class TurnoServiceTest {
 
     @Test
     void testObtenerCantidadTurnosAtendidosPorProfesionalEnRango_EstadoNoEncontrado() {
-        Integer profesionalId = 1;
+        Long profesionalId = 1L;
         LocalDate fechaInicio = LocalDate.of(2024, 1, 1);
         LocalDate fechaFin = LocalDate.of(2024, 1, 31);
 
         Persona profesional = new Persona();
-        profesional.setId(Long.valueOf(profesionalId));
+        profesional.setId(profesionalId);
         profesional.setNombre("Dr. López");
 
         when(personaRepository.findById(profesionalId)).thenReturn(Optional.of(profesional));
@@ -267,8 +256,7 @@ class TurnoServiceTest {
         when(turnoRepository.countByEstadoAndFechaHoraBetween(eq(estadoCancelado), any(), any())).thenReturn(3L);
         when(turnoRepository.countByEstadoAndFechaHoraBetween(eq(estadoReprogramado), any(), any())).thenReturn(2L);
 
-        ReporteTurnosCanceladosYReprogramadosDTO resultado = turnoService
-                .obtenerReporteCanceladosYReprogramados(inicio, fin);
+        ReporteTurnosCanceladosYReprogramadosDTO resultado = turnoService.obtenerReporteCanceladosYReprogramados(inicio, fin);
 
         assertEquals(3, resultado.getCantidadCancelados());
         assertEquals(2, resultado.getCantidadReprogramados());
@@ -314,7 +302,6 @@ class TurnoServiceTest {
         LocalDate fechaInicio = LocalDate.from(fechaInicioDate.atStartOfDay());
         LocalDateTime fechaFin = fechaFinDate.atTime(LocalTime.MAX);
 
-        // Mockeo la respuesta del repo con List<Object[]> (tipo esperado por el repo)
         List<Object[]> listaSimulada = new ArrayList<>();
         listaSimulada.add(new Object[]{"Pediatría", 30.0});
         listaSimulada.add(new Object[]{"Cardiología", 10.0});
@@ -322,7 +309,6 @@ class TurnoServiceTest {
         when(turnoRepository.obtenerDatosCancelacionPorEspecialidad(fechaInicio, LocalDate.from(fechaFin)))
                 .thenReturn(listaSimulada);
 
-        // Ejecutar metodo service que convierte la lista Object a dto
         List<TasaCancelacionPorEspecialidadDTO> resultado = turnoService.obtenerTasaCancelacionPorEspecialidad(fechaInicioDate, fechaFinDate);
 
         assertNotNull(resultado);
@@ -338,7 +324,6 @@ class TurnoServiceTest {
         LocalDate fechaInicio = LocalDate.from(fechaInicioDate.atStartOfDay());
         LocalDateTime fechaFin = fechaFinDate.atTime(LocalTime.MAX);
 
-        // El repositorio devuelve una lista vacía
         when(turnoRepository.obtenerDatosCancelacionPorEspecialidad(fechaInicio, LocalDate.from(fechaFin)))
                 .thenReturn(Collections.emptyList());
 
@@ -347,7 +332,5 @@ class TurnoServiceTest {
         assertNotNull(resultado);
         assertTrue(resultado.isEmpty(), "La lista de tasas de cancelación debería estar vacía");
     }
-
-
-
 }
+

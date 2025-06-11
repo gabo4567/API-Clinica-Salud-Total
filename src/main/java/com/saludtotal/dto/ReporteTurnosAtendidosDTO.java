@@ -1,7 +1,7 @@
 package com.saludtotal.dto;
 
 public class ReporteTurnosAtendidosDTO {
-    private Integer idProfesional;
+    private Long idProfesional;
     private String nombreProfesional;
     private long cantidadTurnosAtendidos;
 
@@ -10,13 +10,13 @@ public class ReporteTurnosAtendidosDTO {
     }
 
     // Constructor
-    public ReporteTurnosAtendidosDTO(Integer idProfesional, String nombreProfesional, long cantidadTurnosAtendidos) {
+    public ReporteTurnosAtendidosDTO(Long idProfesional, String nombreProfesional, long cantidadTurnosAtendidos) {
         this.idProfesional = idProfesional;
         this.nombreProfesional = nombreProfesional;
         this.cantidadTurnosAtendidos = cantidadTurnosAtendidos;
     }
 
-    public Integer getIdProfesional() {
+    public Long getIdProfesional() {
         return idProfesional;
     }
 

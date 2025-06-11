@@ -4,6 +4,7 @@ import com.saludtotal.clinica.models.Turno;
 import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
 import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
 import com.saludtotal.dto.TasaCancelacionPorEspecialidadDTO;
+import com.saludtotal.dto.TurnoDTO;
 import com.saludtotal.service.TurnoService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -24,32 +25,34 @@ public class TurnoController {
 
     // Obtener turnos futuros de un paciente
     @GetMapping("/paciente/{id}/futuros")
-    public ResponseEntity<List<Turno>> getTurnosFuturosPorPaciente(@PathVariable Integer id) {
+    public ResponseEntity<List<TurnoDTO>> getTurnosFuturosPorPaciente(@PathVariable Long id) {
         return ResponseEntity.ok(turnoService.obtenerTurnosFuturosPorPaciente(id));
     }
 
     // Obtener turnos pasados de un paciente
     @GetMapping("/paciente/{id}/pasados")
-    public ResponseEntity<List<Turno>> getTurnosPasadosPorPaciente(@PathVariable Integer id) {
+    public ResponseEntity<List<TurnoDTO>> getTurnosPasadosPorPaciente(@PathVariable Long id) {
         return ResponseEntity.ok(turnoService.obtenerTurnosPasadosPorPaciente(id));
     }
 
     // Obtener turno por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Turno> getTurnoPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(turnoService.obtenerPorId(id));
+    public ResponseEntity<TurnoDTO> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(turnoService.obtenerDTOporId(id));
     }
 
     // Crear nuevo turno
     @PostMapping
-    public ResponseEntity<Turno> crearTurno(@RequestBody Turno turno) {
-        return ResponseEntity.ok(turnoService.crearTurno(turno));
+    public ResponseEntity<TurnoDTO> crearTurno(@RequestBody TurnoDTO turnoDTO) {
+        TurnoDTO creado = turnoService.crearTurno(turnoDTO);
+        return ResponseEntity.ok(creado);
     }
 
     // Actualizar turno
     @PutMapping("/{id}")
-    public ResponseEntity<Turno> actualizarTurno(@PathVariable Long id, @RequestBody Turno turnoActualizado) {
-        return ResponseEntity.ok(turnoService.actualizarTurno(id, turnoActualizado));
+    public ResponseEntity<TurnoDTO> actualizarTurno(@PathVariable Long id, @RequestBody TurnoDTO turnoDTO) {
+        TurnoDTO actualizado = turnoService.actualizarTurno(id, turnoDTO);
+        return ResponseEntity.ok(actualizado);
     }
 
     // Eliminar turno
@@ -59,37 +62,43 @@ public class TurnoController {
         return ResponseEntity.noContent().build();
     }
 
+
     // Buscar turnos por profesional
     @GetMapping("/profesional/{id}")
-    public ResponseEntity<List<Turno>> getTurnosPorProfesional(@PathVariable Integer id) {
-        return ResponseEntity.ok(turnoService.obtenerTurnosPorProfesional(id));
+    public ResponseEntity<List<TurnoDTO>> getTurnosPorProfesional(@PathVariable Long id) {
+        List<TurnoDTO> turnosDTO = turnoService.obtenerTurnosPorProfesional(id);
+        return ResponseEntity.ok(turnosDTO);
     }
 
     // Buscar turnos por estado
     @GetMapping("/estado/{id}")
-    public ResponseEntity<List<Turno>> getTurnosPorEstado(@PathVariable Integer id) {
-        return ResponseEntity.ok(turnoService.obtenerTurnosPorEstado(id));
+    public ResponseEntity<List<TurnoDTO>> getTurnosPorEstado(@PathVariable Long id) {
+        List<TurnoDTO> turnosDTO = turnoService.obtenerTurnosPorEstado(id);
+        return ResponseEntity.ok(turnosDTO);
     }
+
 
     // Buscar turnos por fecha (un día)
     @GetMapping("/fecha")
-    public ResponseEntity<List<Turno>> getTurnosPorFecha(
+    public ResponseEntity<List<TurnoDTO>> getTurnosPorFecha(
             @RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
         return ResponseEntity.ok(turnoService.obtenerTurnosPorFecha(fecha));
     }
 
+
     // Buscar turnos por profesional en un día (disponibilidad)
     @GetMapping("/profesional/{id}/disponibilidad")
-    public ResponseEntity<List<Turno>> getTurnosPorProfesionalEnFecha(
-            @PathVariable Integer id,
+    public ResponseEntity<List<TurnoDTO>> getTurnosPorProfesionalEnFecha(
+            @PathVariable Long id,
             @RequestParam("fecha") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
         return ResponseEntity.ok(turnoService.obtenerTurnosDeProfesionalEnFecha(id, fecha));
     }
 
+
     // Turnos atendidos por profesional en un rango de fechas
     @GetMapping("/reportes/turnos-atendidos")
     public ResponseEntity<ReporteTurnosAtendidosDTO> getCantidadTurnosAtendidosPorProfesional(
-            @RequestParam Integer profesionalId,
+            @RequestParam Long profesionalId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
 
@@ -108,6 +117,7 @@ public class TurnoController {
         return ResponseEntity.ok(resultado);
     }
 
+    // Tasa de cancelación según especialidad
     @GetMapping("/reportes/tasa-cancelacion-por-especialidad")
     public ResponseEntity<List<TasaCancelacionPorEspecialidadDTO>> obtenerTasaCancelacionPorEspecialidad(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,

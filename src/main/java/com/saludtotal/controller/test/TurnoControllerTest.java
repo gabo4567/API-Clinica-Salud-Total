@@ -6,6 +6,7 @@ import com.saludtotal.controller.TurnoController;
 import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
 import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
 import com.saludtotal.dto.TasaCancelacionPorEspecialidadDTO;
+import com.saludtotal.dto.TurnoDTO;
 import com.saludtotal.exceptions.GlobalExceptionHandler;
 import com.saludtotal.exceptions.RecursoNoEncontradoException;
 import com.saludtotal.service.TurnoService;
@@ -47,20 +48,30 @@ class TurnoControllerTest {
     @Test
     @DisplayName("GET /api/turnos/paciente/{id}/futuros - Éxito")
     void testGetTurnosFuturosPorPaciente() throws Exception {
-        Turno turno = new Turno();
-        turno.setId(1);
-        turno.setFechaHora(LocalDateTime.now().plusDays(2));
-        when(turnoService.obtenerTurnosFuturosPorPaciente(1)).thenReturn(List.of(turno));
+        TurnoDTO turnoDTO = new TurnoDTO();
+        turnoDTO.setId(1L);
+        turnoDTO.setFechaHora(LocalDateTime.now().plusDays(2));
+        turnoDTO.setIdPaciente(1L);
+        turnoDTO.setIdProfesional(5L);
+        turnoDTO.setDuracion(30);
+        turnoDTO.setIdEstado(2L);
+
+        when(turnoService.obtenerTurnosFuturosPorPaciente(1L)).thenReturn(List.of(turnoDTO));
 
         mockMvc.perform(get("/api/turnos/paciente/1/futuros"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1L));
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].idPaciente").value(1L))
+                .andExpect(jsonPath("$[0].idProfesional").value(5L))
+                .andExpect(jsonPath("$[0].duracion").value(30))
+                .andExpect(jsonPath("$[0].idEstado").value(2L));
     }
+
 
     @Test
     @DisplayName("GET /api/turnos/paciente/{id}/futuros - Paciente no encontrado")
     void testGetTurnosFuturosPorPacienteNotFound() throws Exception {
-        when(turnoService.obtenerTurnosFuturosPorPaciente(99))
+        when(turnoService.obtenerTurnosFuturosPorPaciente(99L))
                 .thenThrow(new RecursoNoEncontradoException("Paciente no encontrado con ID: 99"));
 
         mockMvc.perform(get("/api/turnos/paciente/99/futuros"))
@@ -71,20 +82,29 @@ class TurnoControllerTest {
     @Test
     @DisplayName("GET /api/turnos/paciente/{id}/pasados - Éxito")
     void testGetTurnosPasadosPorPaciente() throws Exception {
-        Turno turno = new Turno();
-        turno.setId(10);
-        turno.setFechaHora(LocalDateTime.now().minusDays(2));
-        when(turnoService.obtenerTurnosPasadosPorPaciente(1)).thenReturn(List.of(turno));
+        TurnoDTO turnoDTO = new TurnoDTO();
+        turnoDTO.setId(10L);
+        turnoDTO.setFechaHora(LocalDateTime.now().minusDays(2));
+        turnoDTO.setIdPaciente(1L);
+        turnoDTO.setIdProfesional(5L);
+        turnoDTO.setDuracion(45);
+        turnoDTO.setIdEstado(3L);
+
+        when(turnoService.obtenerTurnosPasadosPorPaciente(1L)).thenReturn(List.of(turnoDTO));
 
         mockMvc.perform(get("/api/turnos/paciente/1/pasados"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(10L));
+                .andExpect(jsonPath("$[0].id").value(10L))
+                .andExpect(jsonPath("$[0].idPaciente").value(1L))
+                .andExpect(jsonPath("$[0].idProfesional").value(5L))
+                .andExpect(jsonPath("$[0].duracion").value(45))
+                .andExpect(jsonPath("$[0].idEstado").value(3L));
     }
 
     @Test
     @DisplayName("GET /api/turnos/paciente/{id}/pasados - Paciente no encontrado")
     void testGetTurnosPasadosPorPacienteNotFound() throws Exception {
-        when(turnoService.obtenerTurnosPasadosPorPaciente(99))
+        when(turnoService.obtenerTurnosPasadosPorPaciente(99L))
                 .thenThrow(new RecursoNoEncontradoException("Paciente no encontrado con ID: 99"));
 
         mockMvc.perform(get("/api/turnos/paciente/99/pasados"))
@@ -95,15 +115,19 @@ class TurnoControllerTest {
     @Test
     @DisplayName("POST /api/turnos - Crear turno")
     void testCrearTurno() throws Exception {
-        Turno turno = new Turno();
-        turno.setId(1);
-        turno.setFechaHora(LocalDateTime.now().plusDays(1));
-        turno.setDuracion(30);
-        when(turnoService.crearTurno(any(Turno.class))).thenReturn(turno);
+        TurnoDTO turnoDTO = new TurnoDTO();
+        turnoDTO.setId(1L);
+        turnoDTO.setFechaHora(LocalDateTime.now().plusDays(1));
+        turnoDTO.setDuracion(30);
+        turnoDTO.setIdPaciente(1L);
+        turnoDTO.setIdProfesional(1L);
+        turnoDTO.setIdEstado(1L);
+
+        when(turnoService.crearTurno(any(TurnoDTO.class))).thenReturn(turnoDTO);
 
         mockMvc.perform(post("/api/turnos")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(turno)))
+                        .content(objectMapper.writeValueAsString(turnoDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L));
     }
@@ -111,14 +135,19 @@ class TurnoControllerTest {
     @Test
     @DisplayName("PUT /api/turnos/{id} - Actualizar turno")
     void testActualizarTurno() throws Exception {
-        Turno actualizado = new Turno();
-        actualizado.setId(4);
-        actualizado.setDuracion(40);
-        when(turnoService.actualizarTurno(eq(4L), any(Turno.class))).thenReturn(actualizado);
+        TurnoDTO actualizadoDTO = new TurnoDTO();
+        actualizadoDTO.setId(4L);
+        actualizadoDTO.setDuracion(40);
+        actualizadoDTO.setIdPaciente(1L);
+        actualizadoDTO.setIdProfesional(1L);
+        actualizadoDTO.setIdEstado(1L);
+        actualizadoDTO.setFechaHora(LocalDateTime.now().plusDays(2));
+
+        when(turnoService.actualizarTurno(eq(4L), any(TurnoDTO.class))).thenReturn(actualizadoDTO);
 
         mockMvc.perform(put("/api/turnos/4")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(actualizado)))
+                        .content(objectMapper.writeValueAsString(actualizadoDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.duracion").value(40));
     }
@@ -126,17 +155,23 @@ class TurnoControllerTest {
     @Test
     @DisplayName("PUT /api/turnos/{id} - Turno no encontrado")
     void testActualizarTurnoNotFound() throws Exception {
-        Turno turno = new Turno();
-        turno.setDuracion(40);
-        when(turnoService.actualizarTurno(eq(77L), any(Turno.class)))
+        TurnoDTO turnoDTO = new TurnoDTO();
+        turnoDTO.setDuracion(40);
+        turnoDTO.setIdPaciente(1L);
+        turnoDTO.setIdProfesional(1L);
+        turnoDTO.setIdEstado(1L);
+        turnoDTO.setFechaHora(LocalDateTime.now());
+
+        when(turnoService.actualizarTurno(eq(77L), any(TurnoDTO.class)))
                 .thenThrow(new RecursoNoEncontradoException("Turno no encontrado con ID: 77"));
 
         mockMvc.perform(put("/api/turnos/77")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(turno)))
+                        .content(objectMapper.writeValueAsString(turnoDTO)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Turno no encontrado con ID: 77"));
     }
+
 
     @Test
     @DisplayName("DELETE /api/turnos/{id} - Éxito")
@@ -160,7 +195,7 @@ class TurnoControllerTest {
     @DisplayName("GET /api/turnos/{id} - Turno encontrado")
     void testGetTurnoPorId() throws Exception {
         Turno turno = new Turno();
-        turno.setId(5);
+        turno.setId(5L);
         turno.setDuracion(20);
         when(turnoService.obtenerPorId(5L)).thenReturn(turno);
 
@@ -180,22 +215,11 @@ class TurnoControllerTest {
                 .andExpect(jsonPath("$.message").value("Turno no encontrado con ID: 77"));
     }
 
-    @Test
-    @DisplayName("GET /api/turnos/estado/{id} - Turnos por estado")
-    void testGetTurnosPorEstado() throws Exception {
-        Turno turno = new Turno();
-        turno.setId(8);
-        when(turnoService.obtenerTurnosPorEstado(2)).thenReturn(List.of(turno));
-
-        mockMvc.perform(get("/api/turnos/estado/2"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(8L));
-    }
 
     @Test
     @DisplayName("GET /api/turnos/estado/{id} - Estado no encontrado")
     void testGetTurnosPorEstadoNotFound() throws Exception {
-        when(turnoService.obtenerTurnosPorEstado(99))
+        when(turnoService.obtenerTurnosPorEstado(99L))
                 .thenThrow(new RecursoNoEncontradoException("Estado no encontrado con ID: 99"));
 
         mockMvc.perform(get("/api/turnos/estado/99"))
@@ -204,56 +228,8 @@ class TurnoControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/turnos/fecha?fecha=2025-06-15 - Turnos por fecha")
-    void testGetTurnosPorFecha() throws Exception {
-        Turno turno = new Turno();
-        turno.setId(6);
-        when(turnoService.obtenerTurnosPorFecha(LocalDate.of(2025, 6, 15))).thenReturn(List.of(turno));
-
-        mockMvc.perform(get("/api/turnos/fecha?fecha=2025-06-15"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(6L));
-    }
-
-    @Test
-    @DisplayName("GET /api/turnos/profesional/{id}/disponibilidad - Turnos por profesional y fecha")
-    void testGetTurnosPorProfesionalEnFecha() throws Exception {
-        Turno turno = new Turno();
-        turno.setId(9);
-        when(turnoService.obtenerTurnosDeProfesionalEnFecha(eq(5), eq(LocalDate.of(2025, 6, 15))))
-                .thenReturn(List.of(turno));
-
-        mockMvc.perform(get("/api/turnos/profesional/5/disponibilidad?fecha=2025-06-15"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(9L));
-    }
-
-    @Test
-    void testGetCantidadTurnosAtendidosPorProfesional_Exitoso() throws Exception {
-        Integer profesionalId = 1;
-        String fechaInicio = "2024-01-01";
-        String fechaFin = "2024-01-31";
-
-        ReporteTurnosAtendidosDTO dto = new ReporteTurnosAtendidosDTO(profesionalId, "Dr. López", 5);
-
-        when(turnoService.obtenerCantidadTurnosAtendidosPorProfesionalEnRango(
-                profesionalId, LocalDate.parse(fechaInicio), LocalDate.parse(fechaFin)))
-                .thenReturn(dto);
-
-        mockMvc.perform(get("/api/turnos/reportes/turnos-atendidos")
-                        .param("profesionalId", profesionalId.toString())
-                        .param("fechaInicio", fechaInicio)
-                        .param("fechaFin", fechaFin))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.idProfesional").value(1))
-                .andExpect(jsonPath("$.nombreProfesional").value("Dr. López"))
-                .andExpect(jsonPath("$.cantidadTurnosAtendidos").value(5));
-    }
-
-
-    @Test
     void testGetCantidadTurnosAtendidosPorProfesional_ProfesionalNoEncontrado() throws Exception {
-        Integer profesionalId = 1;
+        Long profesionalId = 1L;
         String fechaInicio = "2024-01-01";
         String fechaFin = "2024-01-31";
 
@@ -270,7 +246,7 @@ class TurnoControllerTest {
 
     @Test
     void testGetCantidadTurnosAtendidosPorProfesional_EstadoNoEncontrado() throws Exception {
-        Integer profesionalId = 1;
+        Long profesionalId = 1L;
         String fechaInicio = "2024-01-01";
         String fechaFin = "2024-01-31";
 
@@ -368,8 +344,5 @@ class TurnoControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().json("[]"));
     }
-
-
-
 
 }

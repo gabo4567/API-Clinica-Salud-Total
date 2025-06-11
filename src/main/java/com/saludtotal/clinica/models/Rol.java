@@ -7,9 +7,8 @@ import jakarta.persistence.*;
 public class Rol {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_rol")
-    private Integer idRol;
+    private Long idRol;
 
     @Column(length = 100, nullable = false)
     private String nombre;
@@ -25,11 +24,11 @@ public class Rol {
     }
 
     // Getters y setters
-    public Integer getIdRol() {
+    public Long getIdRol() {
         return idRol;
     }
 
-    public void setIdRol(Integer idRol) {
+    public void setIdRol(Long idRol) {
         this.idRol = idRol;
     }
 

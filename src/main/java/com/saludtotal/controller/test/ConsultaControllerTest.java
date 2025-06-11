@@ -37,7 +37,7 @@ public class ConsultaControllerTest {
 
     @Test
     void crearConsulta_Exitoso() throws Exception {
-        ConsultaRequestDTO requestDTO = new ConsultaRequestDTO("Juan Pérez", "juan.perez@gmail.com", "Consulta de ejemplo", 1);
+        ConsultaRequestDTO requestDTO = new ConsultaRequestDTO("Juan Pérez", "juan.perez@gmail.com", "Consulta de ejemplo", 1L);
         ConsultaResponseDTO responseDTO = new ConsultaResponseDTO(1L, "Juan Pérez", "juan.perez@gmail.com", "Consulta de ejemplo", LocalDateTime.now(), "Activo");
 
         when(consultaService.crearConsulta(ArgumentMatchers.any())).thenReturn(responseDTO);
@@ -97,7 +97,7 @@ public class ConsultaControllerTest {
 
     @Test
     void crearConsulta_CorreoInvalido() throws Exception {
-        ConsultaRequestDTO requestDTO = new ConsultaRequestDTO("Juan Pérez", "correo-invalido", "Mensaje válido", 1);
+        ConsultaRequestDTO requestDTO = new ConsultaRequestDTO("Juan Pérez", "correo-invalido", "Mensaje válido", 1L);
 
         mockMvc.perform(post("/api/consultas")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -107,7 +107,7 @@ public class ConsultaControllerTest {
 
     @Test
     void crearConsulta_MensajeVacio() throws Exception {
-        ConsultaRequestDTO requestDTO = new ConsultaRequestDTO("Juan Pérez", "juan.perez@gmail.com", "", 1);
+        ConsultaRequestDTO requestDTO = new ConsultaRequestDTO("Juan Pérez", "juan.perez@gmail.com", "", 1L);
 
         mockMvc.perform(post("/api/consultas")
                         .contentType(MediaType.APPLICATION_JSON)

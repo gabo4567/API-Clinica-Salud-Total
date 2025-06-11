@@ -21,13 +21,13 @@ public class Paciente {
     private String obraSocial;
 
     @Column(name = "id_estado")
-    private int idEstado;
+    private Long idEstado;
 
     // Constructor vacío
     public Paciente() {
     }
 
-    public Paciente(int idPersona, String obraSocial, int idEstado) {
+    public Paciente(int idPersona, String obraSocial, Long idEstado) {
         this.persona = persona;
         this.obraSocial = obraSocial;
         this.idEstado = idEstado;
@@ -49,11 +49,11 @@ public class Paciente {
         this.obraSocial = obraSocial;
     }
 
-    public int getIdEstado() {
+    public Long getIdEstado() {
         return idEstado;
     }
 
-    public void setIdEstado(int idEstado) {
+    public void setIdEstado(Long idEstado) {
         this.idEstado = idEstado;
     }
 

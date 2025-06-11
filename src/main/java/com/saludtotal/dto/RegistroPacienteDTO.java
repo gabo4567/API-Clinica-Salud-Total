@@ -91,6 +91,6 @@ public class RegistroPacienteDTO {
     public String getObraSocial() { return obraSocial; }
     public void setObraSocial(String obraSocial) { this.obraSocial = obraSocial; }
 
-    public int getIdEstadoPaciente() { return Math.toIntExact(idEstadoPaciente); }
+    public Long getIdEstadoPaciente() { return idEstadoPaciente; }
     public void setIdEstadoPaciente(Long idEstadoPaciente) { this.idEstadoPaciente = idEstadoPaciente; }
 }

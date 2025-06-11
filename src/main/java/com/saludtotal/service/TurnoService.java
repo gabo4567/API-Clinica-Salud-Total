@@ -1,11 +1,10 @@
 package com.saludtotal.service;
 
-import com.saludtotal.clinica.models.Estado;
-import com.saludtotal.clinica.models.Persona;
-import com.saludtotal.clinica.models.Turno;
+import com.saludtotal.clinica.models.*;
 import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
 import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
 import com.saludtotal.dto.TasaCancelacionPorEspecialidadDTO;
+import com.saludtotal.dto.TurnoDTO;
 import com.saludtotal.exceptions.RecursoNoEncontradoException;
 import com.saludtotal.repositories.TurnoRepository;
 import com.saludtotal.repositories.PacienteRepository;
@@ -14,12 +13,12 @@ import com.saludtotal.repositories.EstadoRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TurnoService {
@@ -37,45 +36,99 @@ public class TurnoService {
         this.estadoRepository = estadoRepository;
     }
 
-    // Obtener turnos futuros por paciente
-    public List<Turno> obtenerTurnosFuturosPorPaciente(Integer pacienteId) {
-        validarPaciente(pacienteId);
-        List<Turno> turnos = turnoRepository.findByPacienteIdAndFechaHoraAfter(pacienteId, LocalDateTime.now());
-        if (turnos.isEmpty()) {
-            throw new RecursoNoEncontradoException("No se encontraron turnos futuros para el paciente con ID: " + pacienteId);
-        }
-        return turnos;
-    }
-
-    // Obtener turnos pasados por paciente
-    public List<Turno> obtenerTurnosPasadosPorPaciente(Integer pacienteId) {
-        validarPaciente(pacienteId);
-        List<Turno> turnos = turnoRepository.findByPacienteIdAndFechaHoraBefore(pacienteId, LocalDateTime.now());
-        if (turnos.isEmpty()) {
-            throw new RecursoNoEncontradoException("No se encontraron turnos pasados para el paciente con ID: " + pacienteId);
-        }
-        return turnos;
-    }
-
-    // Obtener turno por ID
+    // Obtener turno por ID (entidad)
     public Turno obtenerPorId(Long id) {
         return turnoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Turno no encontrado con ID: " + id));
     }
 
+    // Obtener turno por ID (DTO)
+    public TurnoDTO obtenerDTOporId(Long id) {
+        Turno turno = obtenerPorId(id);
+        return convertirADTO(turno);
+    }
+
+    // Metodo para convertir entidad Turno a TurnoDTO
+    private TurnoDTO convertirADTO(Turno turno) {
+        TurnoDTO dto = new TurnoDTO();
+        dto.setId(turno.getId());
+        dto.setComprobante(turno.getComprobante());
+        dto.setIdPaciente(turno.getPaciente().getId());
+        dto.setIdProfesional(turno.getProfesional().getId());
+        dto.setFechaHora(turno.getFechaHora());
+        dto.setDuracion(turno.getDuracion());
+        dto.setIdEstado(turno.getEstado().getIdEstado());
+        dto.setObservaciones(turno.getObservaciones());
+        return dto;
+    }
+
+    // Metodo para convertir TurnoDTO a entidad Turno
+    private Turno convertirADominio(TurnoDTO turnoDTO) {
+        Turno turno = new Turno();
+        turno.setId(turnoDTO.getId());
+        turno.setComprobante(turnoDTO.getComprobante());
+
+        turno.setPaciente(new Persona());
+        turno.getPaciente().setId(turnoDTO.getIdPaciente());
+
+        turno.setProfesional(new Persona());
+        turno.getProfesional().setId(turnoDTO.getIdProfesional());
+
+        turno.setEstado(new Estado());
+        turno.getEstado().setIdEstado(turnoDTO.getIdEstado());
+
+        turno.setFechaHora(turnoDTO.getFechaHora());
+        turno.setDuracion(turnoDTO.getDuracion());
+        turno.setObservaciones(turnoDTO.getObservaciones());
+
+        return turno;
+    }
+
+    // Obtener turnos futuros por paciente, devolviendo lista DTO
+    public List<TurnoDTO> obtenerTurnosFuturosPorPaciente(Long pacienteId) {
+        validarPaciente(pacienteId);
+        List<Turno> turnos = turnoRepository.findByPacienteIdAndFechaHoraAfter(pacienteId, LocalDateTime.now());
+        if (turnos.isEmpty()) {
+            throw new RecursoNoEncontradoException("No se encontraron turnos futuros para el paciente con ID: " + pacienteId);
+        }
+        return turnos.stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
+    // Similar para turnos pasados
+    public List<TurnoDTO> obtenerTurnosPasadosPorPaciente(Long pacienteId) {
+        validarPaciente(pacienteId);
+        List<Turno> turnos = turnoRepository.findByPacienteIdAndFechaHoraBefore(pacienteId, LocalDateTime.now());
+        if (turnos.isEmpty()) {
+            throw new RecursoNoEncontradoException("No se encontraron turnos pasados para el paciente con ID: " + pacienteId);
+        }
+        return turnos.stream()
+                .map(this::convertirADTO)
+                .collect(Collectors.toList());
+    }
+
     // Crear nuevo turno
-    public Turno crearTurno(Turno turno) {
-        return turnoRepository.save(turno);
+    public TurnoDTO crearTurno(TurnoDTO turnoDTO) {
+        Turno turno = convertirADominio(turnoDTO); // metodo para convertir DTO a entidad
+        Turno guardado = turnoRepository.save(turno);
+        return convertirADTO(guardado); // metodo para convertir entidad a DTO
     }
 
     // Actualizar turno existente
-    public Turno actualizarTurno(Long id, Turno turnoActualizado) {
+    public TurnoDTO actualizarTurno(Long id, TurnoDTO turnoDTO) {
         Turno turno = obtenerPorId(id);
-        turno.setFechaHora(turnoActualizado.getFechaHora());
-        turno.setDuracion(turnoActualizado.getDuracion());
-        turno.setEstado(turnoActualizado.getEstado());
-        turno.setObservaciones(turnoActualizado.getObservaciones());
-        return turnoRepository.save(turno);
+        turno.setFechaHora(turnoDTO.getFechaHora());
+        turno.setDuracion(turnoDTO.getDuracion());
+        // setear estado y observaciones con valores del DTO
+        // Suponiendo que tienes un metodo para obtener Estado por id:
+        Estado estado = estadoRepository.findById(turnoDTO.getIdEstado())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estado no encontrado"));
+        turno.setEstado(estado);
+        turno.setObservaciones(turnoDTO.getObservaciones());
+
+        Turno actualizado = turnoRepository.save(turno);
+        return convertirADTO(actualizado);
     }
 
     // Eliminar turno (cancelar)
@@ -84,43 +137,55 @@ public class TurnoService {
         turnoRepository.delete(turno);
     }
 
-    // Buscar turnos por profesional
-    public List<Turno> obtenerTurnosPorProfesional(Integer profesionalId) {
+    // Obtener turnos por profesional
+    public List<TurnoDTO> obtenerTurnosPorProfesional(Long profesionalId) {
         Persona profesional = validarPersona(profesionalId);
-        return turnoRepository.findByProfesional(profesional);
+        List<Turno> turnos = turnoRepository.findByProfesional(profesional);
+        if (turnos.isEmpty()) {
+            throw new RecursoNoEncontradoException("No se encontraron turnos para el profesional con ID: " + profesionalId);
+        }
+        return turnos.stream()
+                .map(this::convertirADTO)
+                .toList();
     }
 
-    // Buscar turnos por estado
-    public List<Turno> obtenerTurnosPorEstado(Integer estadoId) {
-        Estado estado = estadoRepository.findById(estadoId.longValue())
+    // Obtener turnos por estado
+    public List<TurnoDTO> obtenerTurnosPorEstado(Long estadoId) {
+        Estado estado = estadoRepository.findById(estadoId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Estado no encontrado con ID: " + estadoId));
 
         List<Turno> turnos = turnoRepository.findByEstado(estado);
         if (turnos.isEmpty()) {
             throw new RecursoNoEncontradoException("No se encontraron turnos para el estado con ID: " + estadoId);
         }
-        return turnos;
+        return turnos.stream()
+                .map(this::convertirADTO)
+                .toList();
     }
-
 
     // Buscar turnos por fecha
-    public List<Turno> obtenerTurnosPorFecha(LocalDate fecha) {
+    public List<TurnoDTO> obtenerTurnosPorFecha(LocalDate fecha) {
         LocalDateTime inicio = fecha.atStartOfDay();
         LocalDateTime fin = fecha.atTime(LocalTime.MAX);
-        return turnoRepository.findByFechaHoraBetween(inicio, fin);
+        return turnoRepository.findByFechaHoraBetween(inicio, fin)
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
     }
 
-
-    // Control de disponibilidad por profesional, especialidad y fecha
-    public List<Turno> obtenerTurnosDeProfesionalEnFecha(Integer profesionalId, LocalDate fecha) {
+    // Control de disponibilidad por profesional y fecha
+    public List<TurnoDTO> obtenerTurnosDeProfesionalEnFecha(Long profesionalId, LocalDate fecha) {
         Persona profesional = validarPersona(profesionalId);
         LocalDateTime inicio = fecha.atStartOfDay();
         LocalDateTime fin = fecha.atTime(LocalTime.MAX);
-        return turnoRepository.findByProfesionalAndFechaHoraBetween(profesional, inicio, fin);
+        return turnoRepository.findByProfesionalAndFechaHoraBetween(profesional, inicio, fin)
+                .stream()
+                .map(this::convertirADTO)
+                .toList();
     }
 
-    public ReporteTurnosAtendidosDTO obtenerCantidadTurnosAtendidosPorProfesionalEnRango(Integer profesionalId, LocalDate fechaInicio, LocalDate fechaFin) {
-        // Validar persona profesional
+    // Reporte cantidad de turnos atendidos por profesional en rango
+    public ReporteTurnosAtendidosDTO obtenerCantidadTurnosAtendidosPorProfesionalEnRango(Long profesionalId, LocalDate fechaInicio, LocalDate fechaFin) {
         Persona profesional = validarPersona(profesionalId);
 
         Estado estadoAtendido = estadoRepository.findByNombre("Atendido")
@@ -131,10 +196,10 @@ public class TurnoService {
 
         long cantidad = turnoRepository.countByProfesionalAndEstadoAndFechaHoraBetween(profesional, estadoAtendido, inicio, fin);
 
-        return new ReporteTurnosAtendidosDTO(Math.toIntExact(profesional.getId()), profesional.getNombre(), cantidad);
+        return new ReporteTurnosAtendidosDTO((long) Math.toIntExact(profesional.getId()), profesional.getNombre(), cantidad);
     }
 
-    // Reportes de turnos cancelados y reprogramados
+    // Reporte de turnos cancelados y reprogramados
     public ReporteTurnosCanceladosYReprogramadosDTO obtenerReporteCanceladosYReprogramados(LocalDate fechaInicio, LocalDate fechaFin) {
         Estado estadoCancelado = estadoRepository.findByNombre("Cancelado")
                 .orElseThrow(() -> new RecursoNoEncontradoException("Estado 'Cancelado' no encontrado"));
@@ -153,30 +218,41 @@ public class TurnoService {
 
     // Tasa de cancelación de turnos por especialidad
     public List<TasaCancelacionPorEspecialidadDTO> obtenerTasaCancelacionPorEspecialidad(LocalDate fechaInicio, LocalDate fechaFin) {
-        LocalDateTime inicio = fechaInicio.atStartOfDay();
-        LocalDateTime fin = fechaFin.atTime(LocalTime.MAX);
-
         List<Object[]> resultados = turnoRepository.obtenerDatosCancelacionPorEspecialidad(fechaInicio, fechaFin);
 
         List<TasaCancelacionPorEspecialidadDTO> listaDTO = new ArrayList<>();
         for (Object[] fila : resultados) {
+            String especialidad = (String) fila[0];
+            long totalTurnos = ((Number) fila[1]).longValue();
+            long turnosCancelados = ((Number) fila[2]).longValue();
+
+            double tasaCancelacion = totalTurnos > 0 ? (double) turnosCancelados / totalTurnos * 100 : 0.0;
+
             TasaCancelacionPorEspecialidadDTO dto = new TasaCancelacionPorEspecialidadDTO();
-            dto.setEspecialidad((String) fila[0]);
-            dto.setTasaCancelacion(((Number) fila[1]).doubleValue());
+            dto.setEspecialidad(especialidad);
+            dto.setTotalTurnos(totalTurnos);
+            dto.setTurnosCancelados(turnosCancelados);
+            dto.setTasaCancelacion(tasaCancelacion);
+
             listaDTO.add(dto);
         }
         return listaDTO;
     }
 
+
+
+
     // ==== Métodos auxiliares ====
 
-    private void validarPaciente(Integer pacienteId) {
-        pacienteRepository.findById(pacienteId.longValue())
+    private void validarPaciente(Long pacienteId) {
+        pacienteRepository.findById(pacienteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Paciente no encontrado con ID: " + pacienteId));
     }
 
-    private Persona validarPersona(Integer personaId) {
-        return personaRepository.findById((int) personaId.longValue())
+    private Persona validarPersona(Long personaId) {
+        return personaRepository.findById(personaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Persona no encontrada con ID: " + personaId));
     }
 }
+
+

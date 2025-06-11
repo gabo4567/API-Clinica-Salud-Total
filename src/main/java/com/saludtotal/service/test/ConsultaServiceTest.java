@@ -39,7 +39,7 @@ public class ConsultaServiceTest {
 
     @Test
     void crearConsulta_Exitoso() {
-        ConsultaRequestDTO dto = new ConsultaRequestDTO("Juan Perez", "juan@mail.com", "Consulta sobre turnos", 1);
+        ConsultaRequestDTO dto = new ConsultaRequestDTO("Juan Perez", "juan@mail.com", "Consulta sobre turnos", 1L);
         Estado estado = new Estado(1L, "Nuevo");
 
         Consulta consulta = new Consulta(1L, "Juan Perez", "juan@mail.com", "Consulta sobre turnos", estado);
@@ -57,7 +57,7 @@ public class ConsultaServiceTest {
 
     @Test
     void crearConsulta_EstadoNoExiste() {
-        ConsultaRequestDTO dto = new ConsultaRequestDTO("Ana", "ana@mail.com", "Mensaje", 99);
+        ConsultaRequestDTO dto = new ConsultaRequestDTO("Ana", "ana@mail.com", "Mensaje", 99L);
         when(estadoRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(RecursoNoEncontradoException.class, () -> {

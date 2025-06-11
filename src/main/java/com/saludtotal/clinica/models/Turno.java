@@ -13,7 +13,7 @@ public class Turno {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_turno")
-    private Integer id;
+    private Long id;
 
     @Column(name = "comprobante", nullable = false, length = 50)
     private String comprobante;
@@ -53,8 +53,8 @@ public class Turno {
 
     // Getters y setters
 
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getComprobante() { return comprobante; }
     public void setComprobante(String comprobante) { this.comprobante = comprobante; }

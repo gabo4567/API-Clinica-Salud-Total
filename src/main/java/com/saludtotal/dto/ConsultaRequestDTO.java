@@ -21,12 +21,12 @@ public class ConsultaRequestDTO {
     private String mensaje;
 
     @NotNull(message = "Debe especificar el ID del estado.")
-    private Integer idEstado;
+    private Long idEstado;
 
     public ConsultaRequestDTO() {
     }
 
-    public ConsultaRequestDTO(String nombre, String correo, String mensaje, Integer idEstado) {
+    public ConsultaRequestDTO(String nombre, String correo, String mensaje, Long idEstado) {
         this.nombre = nombre;
         this.correo = correo;
         this.mensaje = mensaje;
@@ -59,11 +59,11 @@ public class ConsultaRequestDTO {
         this.mensaje = mensaje;
     }
 
-    public Integer getIdEstado() {
+    public Long getIdEstado() {
         return idEstado;
     }
 
-    public void setIdEstado(Integer idEstado) {
+    public void setIdEstado(Long idEstado) {
         this.idEstado = idEstado;
     }
 
