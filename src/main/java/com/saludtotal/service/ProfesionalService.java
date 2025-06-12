@@ -71,11 +71,23 @@ public class ProfesionalService {
     private ProfesionalDTO convertirAProfesionalDTO(Profesional profesional) {
         ProfesionalDTO dto = new ProfesionalDTO();
         dto.setId(profesional.getIdProfesional());
-        dto.setIdPersona(profesional.getPersona().getId());
+
+        Persona persona = profesional.getPersona();
+        dto.setIdPersona(persona.getId());
+        dto.setDni(persona.getDni());
+        dto.setNombre(persona.getNombre());
+        dto.setApellido(persona.getApellido());
+        dto.setEmail(persona.getEmail());
+        dto.setContrasenia(persona.getContrasenia()); // Si no querés devolverla, podés comentarla
+        dto.setTelefono(persona.getTelefono());
+        dto.setDireccion(persona.getDireccion());
+        dto.setFechaNacimiento(persona.getFechaNacimiento());
+        dto.setIdRol(persona.getIdRol());
+
         dto.setIdEspecialidad(profesional.getEspecialidad().getIdEspecialidad());
         dto.setMatriculaProfesional(profesional.getMatriculaProfesional());
         dto.setIdEstado(profesional.getEstado().getIdEstado());
-        // NO se devuelve la contraseña por seguridad
+
         return dto;
     }
 

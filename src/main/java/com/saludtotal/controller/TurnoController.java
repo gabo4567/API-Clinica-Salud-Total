@@ -23,6 +23,12 @@ public class TurnoController {
         this.turnoService = turnoService;
     }
 
+    // Obtener todos los turnos
+    @GetMapping
+    public ResponseEntity<List<TurnoDTO>> listarTodos() {
+        return ResponseEntity.ok(turnoService.listarTodos());
+    }
+
     // Obtener turnos futuros de un paciente
     @GetMapping("/paciente/{id}/futuros")
     public ResponseEntity<List<TurnoDTO>> getTurnosFuturosPorPaciente(@PathVariable Long id) {

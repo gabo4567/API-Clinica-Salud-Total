@@ -36,6 +36,12 @@ public class TurnoService {
         this.estadoRepository = estadoRepository;
     }
 
+    // Obtener todos los turnos
+    public List<TurnoDTO> listarTodos() {
+        List<Turno> turnos = turnoRepository.findAll();
+        return turnos.stream().map(this::convertirADTO).toList();
+    }
+
     // Obtener turno por ID (entidad)
     public Turno obtenerPorId(Long id) {
         return turnoRepository.findById(id)
@@ -238,8 +244,6 @@ public class TurnoService {
         }
         return listaDTO;
     }
-
-
 
 
     // ==== Métodos auxiliares ====
