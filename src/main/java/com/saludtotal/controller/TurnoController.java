@@ -1,6 +1,5 @@
 package com.saludtotal.controller;
 
-import com.saludtotal.clinica.models.Turno;
 import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
 import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
 import com.saludtotal.dto.TasaCancelacionPorEspecialidadDTO;

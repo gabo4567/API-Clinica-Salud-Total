@@ -44,7 +44,6 @@ public class SecretariaService {
         secretariaExistente.setNombre(dto.getNombre());
         secretariaExistente.setApellido(dto.getApellido());
         secretariaExistente.setEmail(dto.getEmail());
-        secretariaExistente.setContrasenia(dto.getContrasenia());
 
         Estado estado = new Estado();
         estado.setIdEstado(dto.getIdEstado());
@@ -67,7 +66,6 @@ public class SecretariaService {
         dto.setNombre(persona.getNombre());
         dto.setApellido(persona.getApellido());
         dto.setEmail(persona.getEmail());
-        dto.setContrasenia(persona.getContrasenia());
         dto.setIdEstado(persona.getIdEstado());
         return dto;
     }
@@ -78,7 +76,6 @@ public class SecretariaService {
         persona.setNombre(dto.getNombre());
         persona.setApellido(dto.getApellido());
         persona.setEmail(dto.getEmail());
-        persona.setContrasenia(dto.getContrasenia());
 
         Estado estado = new Estado();
         estado.setIdEstado(dto.getIdEstado());

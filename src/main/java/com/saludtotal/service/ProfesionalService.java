@@ -54,7 +54,6 @@ public class ProfesionalService {
 
         Persona persona = new Persona();
         persona.setId(dto.getIdPersona());
-        persona.setContrasenia(dto.getContrasenia()); // 👈 AGREGADO
         profesionalExistente.setPersona(persona);
 
         Profesional actualizado = profesionalRepository.save(profesionalExistente);
@@ -78,7 +77,6 @@ public class ProfesionalService {
         dto.setNombre(persona.getNombre());
         dto.setApellido(persona.getApellido());
         dto.setEmail(persona.getEmail());
-        dto.setContrasenia(persona.getContrasenia()); // Si no querés devolverla, podés comentarla
         dto.setTelefono(persona.getTelefono());
         dto.setDireccion(persona.getDireccion());
         dto.setFechaNacimiento(persona.getFechaNacimiento());
@@ -98,7 +96,6 @@ public class ProfesionalService {
 
         Persona persona = new Persona();
         persona.setId(dto.getIdPersona());
-        persona.setContrasenia(dto.getContrasenia());
         profesional.setPersona(persona);
 
         Especialidad especialidad = new Especialidad();

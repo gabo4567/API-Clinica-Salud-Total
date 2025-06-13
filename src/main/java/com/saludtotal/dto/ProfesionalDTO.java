@@ -10,7 +10,6 @@ public class ProfesionalDTO {
     private String nombre;
     private String apellido;
     private String email;
-    private String contrasenia;
     private String telefono;
     private String direccion;
     private LocalDate fechaNacimiento;
@@ -70,14 +69,6 @@ public class ProfesionalDTO {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getContrasenia() {
-        return contrasenia;
-    }
-
-    public void setContrasenia(String contrasenia) {
-        this.contrasenia = contrasenia;
     }
 
     public String getTelefono() {

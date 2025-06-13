@@ -19,9 +19,6 @@ public class Persona {
     private String telefono;
     private String direccion;
 
-    @Column(name = "contrasenia")
-    private String contrasenia;
-
     @Column(name = "id_rol")
     private Long idRol;
 
@@ -94,14 +91,6 @@ public class Persona {
 
     public void setDireccion(String direccion) {
         this.direccion = direccion;
-    }
-
-    public String getContrasenia() {
-        return contrasenia;
-    }
-
-    public void setContrasenia(String contrasenia) {
-        this.contrasenia = contrasenia;
     }
 
     public Long getIdRol() {

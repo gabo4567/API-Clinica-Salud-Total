@@ -44,9 +44,6 @@ public class PacienteService {
         persona.setIdEstado(dto.getIdEstadoPersona());
         persona.setFechaNacimiento(dto.getFechaNacimiento());
 
-        // ✅ Guardamos la contraseña en Persona
-        persona.setContrasenia(dto.getContrasenia());
-
         Persona personaGuardada = personaRepository.save(persona);
 
         Paciente paciente = new Paciente();
@@ -71,9 +68,6 @@ public class PacienteService {
         persona.setIdEspecialidad(dto.getIdEspecialidad());
         persona.setIdEstado(dto.getIdEstadoPersona());
         persona.setFechaNacimiento(dto.getFechaNacimiento());
-
-        // Actualizar la contraseña también
-        persona.setContrasenia(dto.getContrasenia());
 
         Persona personaActualizada = personaRepository.save(persona);
 
@@ -109,11 +103,6 @@ public class PacienteService {
 
     public List<Paciente> buscarPorApellido(String apellido) {
         return pacienteRepository.findByPersonaApellidoContainingIgnoreCase(apellido);
-    }
-
-    public Optional<Paciente> login(String email, String contrasenia) {
-        return pacienteRepository.findByPersonaEmail(email)
-                .filter(p -> p.getPersona().getContrasenia().equals(contrasenia));
     }
 
 

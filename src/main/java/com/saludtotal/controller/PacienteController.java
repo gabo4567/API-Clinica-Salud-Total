@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pacientes")
@@ -75,11 +74,4 @@ public class PacienteController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<Paciente> login(@RequestBody LoginRequestDTO request) {
-        Optional<Paciente> paciente = pacienteService.login(request.getEmail(), request.getContrasenia());
-
-        return paciente.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
-    }
 }

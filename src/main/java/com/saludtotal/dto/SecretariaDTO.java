@@ -18,9 +18,6 @@ public class SecretariaDTO {
     @Email(message = "Formato de email inválido")
     private String email;
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    private String contrasenia;
-
     @NotNull(message = "El id del estado es obligatorio")
     private Long idEstado;
 
@@ -56,14 +53,6 @@ public class SecretariaDTO {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getContrasenia() {
-        return contrasenia;
-    }
-
-    public void setContrasenia(String contrasenia) {
-        this.contrasenia = contrasenia;
     }
 
     public Long getIdEstado() {

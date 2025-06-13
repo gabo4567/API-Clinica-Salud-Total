@@ -15,22 +15,9 @@ public class LoginController {
     @Autowired
     private LoginService loginService;
 
-    @PostMapping("/paciente")
-    public ResponseEntity<LoginResponseDTO> loginPaciente(@Valid @RequestBody LoginRequestDTO request) {
-        LoginResponseDTO response = loginService.loginPaciente(request.getEmail(), request.getContrasenia());
+    @PostMapping
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
+        LoginResponseDTO response = loginService.login(request.getNombreUsuario(), request.getContrasena());
         return ResponseEntity.ok(response);
     }
-
-    @PostMapping("/profesional")
-    public ResponseEntity<LoginResponseDTO> loginProfesional(@Valid @RequestBody LoginRequestDTO request) {
-        LoginResponseDTO response = loginService.loginProfesional(request.getEmail(), request.getContrasenia());
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/secretaria")
-    public ResponseEntity<LoginResponseDTO> loginSecretaria(@Valid @RequestBody LoginRequestDTO request) {
-        LoginResponseDTO response = loginService.loginSecretaria(request.getEmail(), request.getContrasenia());
-        return ResponseEntity.ok(response);
-    }
-
 }

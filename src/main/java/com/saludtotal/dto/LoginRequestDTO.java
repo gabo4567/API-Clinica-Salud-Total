@@ -1,30 +1,30 @@
 package com.saludtotal.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
 
 public class LoginRequestDTO {
 
-    @NotBlank(message = "El email no puede estar vacío")
-    @Email(message = "Formato de email inválido")
-    private String email;
+    @NotBlank(message = "El nombre de usuario no puede estar vacío")
+    private String nombreUsuario;
 
     @NotBlank(message = "La contraseña no puede estar vacía")
-    private String contrasenia;
+    private String contrasena;
 
     // Getters y Setters
-    public String getEmail() {
-        return email;
+
+    public String getNombreUsuario() {
+        return nombreUsuario;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
     }
 
-    public String getContrasenia() {
-        return contrasenia;
+    public String getContrasena() {
+        return contrasena;
     }
 
-    public void setContrasenia(String contrasenia) {
-        this.contrasenia = contrasenia;
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
     }
 }
