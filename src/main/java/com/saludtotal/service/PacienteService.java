@@ -7,6 +7,7 @@ import com.saludtotal.exceptions.EntidadYaExisteException;
 import com.saludtotal.exceptions.RecursoNoEncontradoException;
 import com.saludtotal.repositories.PacienteRepository;
 import com.saludtotal.repositories.PersonaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,6 +56,11 @@ public class PacienteService {
     }
 
     public Paciente actualizarPaciente(Long idPaciente, RegistroPacienteDTO dto) {
+        System.out.println("---- DATOS RECIBIDOS PARA ACTUALIZAR ----");
+        System.out.println("ID paciente: " + idPaciente);
+        System.out.println("DTO: " + dto);
+
+        // Resto del código
         Paciente pacienteExistente = buscarPorId(idPaciente);
 
         Persona persona = pacienteExistente.getPersona();
@@ -75,8 +81,14 @@ public class PacienteService {
         pacienteExistente.setObraSocial(dto.getObraSocial());
         pacienteExistente.setIdEstado(dto.getIdEstadoPaciente());
 
+        System.out.println("ID Rol: " + dto.getIdRol());
+        System.out.println("ID Especialidad: " + dto.getIdEspecialidad());
+        System.out.println("ID Estado Persona: " + dto.getIdEstadoPersona());
+        System.out.println("Fecha nacimiento: " + dto.getFechaNacimiento());
+
         return pacienteRepository.save(pacienteExistente);
     }
+
 
     public Paciente buscarPorDni(String dni) {
         return pacienteRepository.findByPersonaDni(dni)
@@ -84,14 +96,39 @@ public class PacienteService {
     }
 
     public Paciente buscarPorId(Long id) {
-        return pacienteRepository.findById(id)
+        return pacienteRepository.findByIdConPersona(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Paciente no encontrado con ID: " + id));
     }
 
-    public void eliminarPaciente(Long id) {
-        Paciente paciente = buscarPorId(id);
-        pacienteRepository.delete(paciente);
+    @Transactional
+    public void eliminarPaciente(Long idPaciente) {
+        System.out.println(">>> Llega al backend solicitud para eliminar paciente con ID: " + idPaciente);
+
+        Paciente paciente = buscarPorId(idPaciente);
+        System.out.println(">>> Paciente encontrado: ID=" + paciente.getId() + ", Estado actual=" + paciente.getIdEstado());
+
+        Persona persona = paciente.getPersona();
+        if (persona != null) {
+            // Buscar la persona "attachada" desde la base para evitar problemas con detached entities
+            Persona personaAttached = personaRepository.findById(persona.getId()).orElse(null);
+            if (personaAttached != null) {
+                System.out.println(">>> Persona asociada encontrada (attached): ID=" + personaAttached.getId() + ", Estado actual=" + personaAttached.getIdEstado());
+                personaAttached.setIdEstado(2L);
+                System.out.println(">>> Estado Persona después: " + personaAttached.getIdEstado());
+                personaRepository.saveAndFlush(personaAttached);
+            } else {
+                System.out.println(">>> No se encontró persona attachada con ID: " + persona.getId());
+            }
+        } else {
+            System.out.println(">>> La persona asociada al paciente es NULL");
+        }
+
+        paciente.setIdEstado(2L);
+        pacienteRepository.saveAndFlush(paciente);
+        System.out.println(">>> Paciente con ID " + paciente.getId() + " marcado como inactivo.");
     }
+
+
 
     public List<Paciente> obtenerTodos() {
         return pacienteRepository.findAll();

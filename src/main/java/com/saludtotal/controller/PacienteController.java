@@ -3,8 +3,10 @@ package com.saludtotal.controller;
 import com.saludtotal.clinica.models.Paciente;
 import com.saludtotal.dto.LoginRequestDTO;
 import com.saludtotal.dto.RegistroPacienteDTO;
+import com.saludtotal.repositories.PacienteRepository;
 import com.saludtotal.service.PacienteService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,9 @@ import java.util.List;
 public class PacienteController {
 
     private final PacienteService pacienteService;
+
+    @Autowired
+    private PacienteRepository pacienteRepository;
 
     public PacienteController(PacienteService pacienteService) {
         this.pacienteService = pacienteService;
@@ -64,14 +69,33 @@ public class PacienteController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Paciente> actualizarPaciente(@PathVariable Long id, @Valid @RequestBody RegistroPacienteDTO dto) {
+        System.out.println("LLEGÓ AL CONTROLLER actualizarPaciente con id=" + id);
         Paciente pacienteActualizado = pacienteService.actualizarPaciente(id, dto);
         return ResponseEntity.ok(pacienteActualizado);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarPaciente(@PathVariable Long id) {
-        pacienteService.eliminarPaciente(id);
+        System.out.println(">>> Llega al backend solicitud para eliminar paciente con ID: " + id);
+
+        Paciente paciente = pacienteRepository.findById(id).orElse(null);
+
+        if (paciente == null) {
+            System.out.println(">>> No existe paciente con ID: " + id);
+            return ResponseEntity.notFound().build();
+        }
+
+        System.out.println(">>> Paciente encontrado: ID=" + paciente.getId() + ", Estado actual=" + paciente.getIdEstado());
+
+        paciente.setIdEstado(2L); // Marcar inactivo
+
+        pacienteRepository.saveAndFlush(paciente);
+
+        System.out.println(">>> Paciente con ID " + id + " marcado como inactivo.");
+
         return ResponseEntity.noContent().build();
     }
+
+
 
 }

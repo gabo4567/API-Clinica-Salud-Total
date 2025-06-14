@@ -12,7 +12,7 @@ public class Paciente {
     @Column(name = "id_paciente")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_persona", referencedColumnName = "id_persona", nullable = false)
     private Persona persona;
 
@@ -27,11 +27,12 @@ public class Paciente {
     public Paciente() {
     }
 
-    public Paciente(int idPersona, String obraSocial, Long idEstado) {
+    public Paciente(Persona persona, String obraSocial, Long idEstado) {
         this.persona = persona;
         this.obraSocial = obraSocial;
         this.idEstado = idEstado;
     }
+
 
     public Long getId() {
         return id;
