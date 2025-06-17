@@ -76,16 +76,6 @@ La arquitectura está pensada para ser modular, extensible e integrable fácilme
 
 ---
 
-### 📊 Reportes – `/api/turnos/reportes`
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/turnos-atendidos?profesionalId=1&fechaInicio=YYYY-MM-DD&fechaFin=YYYY-MM-DD` | Cantidad de turnos atendidos por profesional |
-| `GET` | `/turnos-cancelados-reprogramados?fechaInicio=YYYY-MM-DD&fechaFin=YYYY-MM-DD` | Reporte de turnos cancelados y reprogramados |
-| `GET` | `/tasa-cancelacion-por-especialidad?fechaInicio=YYYY-MM-DD&fechaFin=YYYY-MM-DD` | Tasa de cancelación por especialidad |
-
----
-
 ## ⚙️ Requisitos previos
 
 - JDK 17+
