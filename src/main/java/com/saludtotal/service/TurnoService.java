@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,6 +36,36 @@ public class TurnoService {
         this.personaRepository = personaRepository;
         this.estadoRepository = estadoRepository;
     }
+
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+    public String generarNuevoComprobante(LocalDate fecha) {
+        String fechaStr = fecha.format(FORMATO_FECHA);
+        String prefix = "ST-" + fechaStr + "-";
+
+        // Obtener el máximo comprobante que ya existe para ese día
+        String maxComprobante = turnoRepository.findMaxComprobanteByPrefix(prefix);
+
+        long siguienteNumero = 1; // default si no hay comprobantes aún
+
+        if (maxComprobante != null) {
+            // Extraer la parte numérica del comprobante
+            String numeroStr = maxComprobante.substring(prefix.length());
+            try {
+                long numero = Long.parseLong(numeroStr);
+                siguienteNumero = numero + 1;
+            } catch (NumberFormatException e) {
+                // En caso de error, seguir con 1 o loggear
+            }
+        }
+
+        // Formatear número con ceros a la izquierda (6 dígitos)
+        String numeroFormateado = String.format("%06d", siguienteNumero);
+
+        return prefix + numeroFormateado;
+    }
+
+
 
     // Obtener todos los turnos
     public List<TurnoDTO> listarTodos() {
@@ -114,12 +145,16 @@ public class TurnoService {
                 .collect(Collectors.toList());
     }
 
-    // Crear nuevo turno
     public TurnoDTO crearTurno(TurnoDTO turnoDTO) {
-        Turno turno = convertirADominio(turnoDTO); // metodo para convertir DTO a entidad
+        // Generar comprobante usando el metodo centralizado
+        String nuevoComprobante = generarNuevoComprobante(LocalDate.now());
+        turnoDTO.setComprobante(nuevoComprobante);
+
+        Turno turno = convertirADominio(turnoDTO);
         Turno guardado = turnoRepository.save(turno);
-        return convertirADTO(guardado); // metodo para convertir entidad a DTO
+        return convertirADTO(guardado);
     }
+
 
     // Actualizar turno existente
     public TurnoDTO actualizarTurno(Long id, TurnoDTO turnoDTO) {

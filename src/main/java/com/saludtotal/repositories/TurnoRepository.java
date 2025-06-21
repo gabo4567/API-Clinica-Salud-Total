@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.awt.print.Pageable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,6 +49,16 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
 
     // Turnos cancelados y reprogramados
     long countByEstadoAndFechaHoraBetween(Estado estado, LocalDateTime inicio, LocalDateTime fin);
+
+    long countByFechaHoraBetween(LocalDateTime inicio, LocalDateTime fin);
+
+    // Metodo para obtener el último comprobante registrado, ordenando por comprobante descendente y limitando a 1
+    @Query(value = "SELECT t.comprobante FROM Turno t ORDER BY t.comprobante DESC")
+    List<String> findLastComprobante(Pageable pageable);
+
+    @Query(value = "SELECT MAX(comprobante) FROM turno WHERE comprobante LIKE :prefix%", nativeQuery = true)
+    String findMaxComprobanteByPrefix(@Param("prefix") String prefix);
+
 
     // Datos de cancelación por especialidad en un rango de fechas
     @Query(value = "SELECT " +

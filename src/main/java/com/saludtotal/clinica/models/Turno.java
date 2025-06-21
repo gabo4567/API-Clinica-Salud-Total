@@ -28,6 +28,7 @@ public class Turno {
 
     @Column(name = "fecha_hora", nullable = false)
     private LocalDateTime fechaHora;
+    // private String fechaHora;
 
     @Column(name = "duracion", nullable = false)
     private int duracion;

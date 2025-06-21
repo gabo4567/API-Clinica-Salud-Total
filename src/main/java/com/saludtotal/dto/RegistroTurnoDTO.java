@@ -1,11 +1,8 @@
 package com.saludtotal.dto;
 
-import jakarta.validation.constraints.*;
-import java.time.LocalDateTime;
+import jakarta.validation.constraints.NotNull;
 
-public class TurnoDTO {
-
-    private Long id;
+public class RegistroTurnoDTO {
 
     private String comprobante;
 
@@ -16,11 +13,10 @@ public class TurnoDTO {
     private Long idProfesional;
 
     @NotNull(message = "La fecha y hora es obligatoria")
-    private LocalDateTime fechaHora;
-    // private String fechaHora;
+    private String fechaHora;  // Fecha y hora en formato ISO 8601 como String
 
-    @Min(value = 1, message = "La duración debe ser mayor a cero")
-    private int duracion;
+    @NotNull(message = "La duración es obligatoria")
+    private Integer duracion;
 
     @NotNull(message = "El id del estado es obligatorio")
     private Long idEstado;
@@ -28,18 +24,10 @@ public class TurnoDTO {
     private String observaciones;
 
     // Constructor vacío
-    public TurnoDTO(){
+    public RegistroTurnoDTO() {
     }
 
     // Getters y Setters
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getComprobante() {
         return comprobante;
@@ -65,19 +53,19 @@ public class TurnoDTO {
         this.idProfesional = idProfesional;
     }
 
-    public LocalDateTime getFechaHora() {
+    public String getFechaHora() {
         return fechaHora;
     }
 
-    public void setFechaHora(LocalDateTime fechaHora) {
+    public void setFechaHora(String fechaHora) {
         this.fechaHora = fechaHora;
     }
 
-    public int getDuracion() {
+    public Integer getDuracion() {
         return duracion;
     }
 
-    public void setDuracion(int duracion) {
+    public void setDuracion(Integer duracion) {
         this.duracion = duracion;
     }
 
