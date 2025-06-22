@@ -1,8 +1,10 @@
 package com.saludtotal.controller;
 
 import com.saludtotal.dto.*;
+import com.saludtotal.exceptions.TurnoSuperpuestoException;
 import com.saludtotal.service.TurnoService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,7 +48,7 @@ public class TurnoController {
 
     // Crear nuevo turno
     @PostMapping
-    public ResponseEntity<TurnoDTO> crearTurno(@RequestBody RegistroTurnoDTO registroTurnoDTO) {
+    public ResponseEntity<?> crearTurno(@RequestBody RegistroTurnoDTO registroTurnoDTO) {
         try {
             // ✅ Prints de depuración
             System.out.println(">> ID Profesional recibido: " + registroTurnoDTO.getIdProfesional());
@@ -74,7 +76,7 @@ public class TurnoController {
             turnoDTO.setIdProfesional(registroTurnoDTO.getIdProfesional());
             turnoDTO.setFechaHora(fechaHora);
             turnoDTO.setDuracion(registroTurnoDTO.getDuracion());
-            turnoDTO.setIdEstado(idEstado); // se usa el idEstado verificado
+            turnoDTO.setIdEstado(idEstado);
             turnoDTO.setObservaciones(registroTurnoDTO.getObservaciones());
 
             System.out.println(">> TurnoDTO creado para servicio: " + turnoDTO);
@@ -84,12 +86,20 @@ public class TurnoController {
             System.out.println(">> Turno creado con ID: " + creado.getId());
 
             return ResponseEntity.ok(creado);
+
+        } catch (TurnoSuperpuestoException e) {
+            // ⚠️ Error de superposición de turnos
+            System.out.println(">> ERROR: Superposición de turno detectada: " + e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)  // HTTP 409
+                    .body("Ya existe un turno en ese horario para este profesional.");
         } catch (Exception e) {
-            System.out.println(">> Error al crear turno: " + e.getMessage());
-            return ResponseEntity.badRequest().build();
+            // Otro error inesperado
+            System.out.println(">> Error general al crear turno: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Ocurrió un error al crear el turno.");
         }
     }
-
 
     // Actualizar turno
     @PutMapping("/{id}")

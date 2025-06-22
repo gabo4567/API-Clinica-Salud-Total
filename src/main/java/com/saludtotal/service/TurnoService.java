@@ -160,6 +160,18 @@ public class TurnoService {
         Turno turno = convertirADominio(turnoDTO);
         System.out.println(">> Turno convertido a dominio: " + turno);
 
+        // 🔍 Paso 2: Verificar si ya existe un turno en esa fecha/hora para el mismo profesional
+        boolean existeSuperposicion = turnoRepository.existsByProfesionalIdAndFechaHora(
+                turno.getProfesional().getId(),
+                turno.getFechaHora()
+        );
+
+        if (existeSuperposicion) {
+            System.err.println(">> Error: Ya existe un turno reservado en ese horario para este profesional.");
+            throw new IllegalStateException("Ya existe un turno reservado en ese horario para este profesional.");
+        }
+
+        // ✅ Si no hay superposición, continuar y guardar
         Turno guardado = null;
         try {
             guardado = turnoRepository.save(turno);
@@ -171,6 +183,7 @@ public class TurnoService {
         System.out.println(">> Turno guardado con ID: " + guardado.getId());
         return convertirADTO(guardado);
     }
+
 
 
     // Actualizar turno existente (sin usar obtenerPorId)

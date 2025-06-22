@@ -41,6 +41,22 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
     @Query(value = "SELECT MAX(comprobante) FROM turno WHERE comprobante LIKE :prefix%", nativeQuery = true)
     String findMaxComprobanteByPrefix(@Param("prefix") String prefix);
 
+    @Query(value = """
+        SELECT COUNT(*) > 0 FROM turno t
+        WHERE t.id_profesional = :idProfesional
+          AND t.fecha_hora < :fechaHoraFin
+          AND :fechaHoraInicio < DATE_ADD(t.fecha_hora, INTERVAL t.duracion MINUTE)
+        """, nativeQuery = true)
+    boolean existeTurnoSuperpuesto(
+            @Param("idProfesional") Long idProfesional,
+            @Param("fechaHoraInicio") LocalDateTime fechaHoraInicio,
+            @Param("fechaHoraFin") LocalDateTime fechaHoraFin
+    );
+
+
+    // Verifica si hay un turno con ese profesional y con esa fecha
+    boolean existsByProfesionalIdAndFechaHora(Long idProfesional, LocalDateTime fechaHora);
+
     // Turnos por fecha exacta
     List<Turno> findByFechaHora(LocalDateTime fechaHora);
 
