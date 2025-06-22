@@ -105,14 +105,20 @@ public class TurnoService {
         turno.setId(turnoDTO.getId());
         turno.setComprobante(turnoDTO.getComprobante());
 
-        turno.setPaciente(new Persona());
-        turno.getPaciente().setId(turnoDTO.getIdPaciente());
+        Persona paciente = new Persona();
+        paciente.setId(turnoDTO.getIdPaciente());
+        System.out.println(">> Paciente seteado en turno: " + paciente.getId());
+        turno.setPaciente(paciente);
 
-        turno.setProfesional(new Persona());
-        turno.getProfesional().setId(turnoDTO.getIdProfesional());
+        Persona profesional = new Persona();
+        profesional.setId(turnoDTO.getIdProfesional());
+        System.out.println(">> Profesional seteado en turno: " + profesional.getId());
+        turno.setProfesional(profesional);
 
-        turno.setEstado(new Estado());
-        turno.getEstado().setIdEstado(turnoDTO.getIdEstado());
+        Estado estado = new Estado();
+        estado.setIdEstado(turnoDTO.getIdEstado());
+        System.out.println(">> Estado seteado en turno: " + estado.getIdEstado());
+        turno.setEstado(estado);
 
         turno.setFechaHora(turnoDTO.getFechaHora());
         turno.setDuracion(turnoDTO.getDuracion());
@@ -120,6 +126,7 @@ public class TurnoService {
 
         return turno;
     }
+
 
     // Obtener turnos futuros por paciente, devolviendo lista DTO
     public List<TurnoDTO> obtenerTurnosFuturosPorPaciente(Long pacienteId) {
@@ -146,14 +153,25 @@ public class TurnoService {
     }
 
     public TurnoDTO crearTurno(TurnoDTO turnoDTO) {
-        // Generar comprobante usando el metodo centralizado
+        System.out.println(">> Crear turno - recibo DTO: " + turnoDTO);
         String nuevoComprobante = generarNuevoComprobante(LocalDate.now());
         turnoDTO.setComprobante(nuevoComprobante);
 
         Turno turno = convertirADominio(turnoDTO);
-        Turno guardado = turnoRepository.save(turno);
+        System.out.println(">> Turno convertido a dominio: " + turno);
+
+        Turno guardado = null;
+        try {
+            guardado = turnoRepository.save(turno);
+        } catch (Exception e) {
+            System.err.println(">> Error guardando turno: " + e.getMessage());
+            e.printStackTrace();
+            throw e;  // Re-lanzar para que el controller lo capture
+        }
+        System.out.println(">> Turno guardado con ID: " + guardado.getId());
         return convertirADTO(guardado);
     }
+
 
     // Actualizar turno existente (sin usar obtenerPorId)
     public TurnoDTO actualizarTurno(Long id, TurnoDTO turnoDTO) {

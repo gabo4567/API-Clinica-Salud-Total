@@ -48,10 +48,11 @@ public class TurnoController {
     @PostMapping
     public ResponseEntity<TurnoDTO> crearTurno(@RequestBody RegistroTurnoDTO registroTurnoDTO) {
         try {
-            // ✅ Agrega este print para depuración
+            // ✅ Prints de depuración
             System.out.println(">> ID Profesional recibido: " + registroTurnoDTO.getIdProfesional());
             System.out.println(">> ID Paciente recibido: " + registroTurnoDTO.getIdPaciente());
             System.out.println(">> FechaHora recibida: " + registroTurnoDTO.getFechaHora());
+            System.out.println(">> idEstado recibido: " + registroTurnoDTO.getIdEstado());
 
             // Convierte string a LocalDateTime
             LocalDateTime fechaHora = LocalDateTime.parse(registroTurnoDTO.getFechaHora());
@@ -59,23 +60,36 @@ public class TurnoController {
             // Generar comprobante nuevo con formato ST-YYYYMMDD-000001
             String comprobante = turnoService.generarNuevoComprobante(fechaHora.toLocalDate());
 
+            // Si idEstado es null, asignar por defecto 10L (programado)
+            Long idEstado = registroTurnoDTO.getIdEstado();
+            if (idEstado == null) {
+                idEstado = 10L;
+                System.out.println(">> idEstado estaba null, se asignó 10L por defecto.");
+            }
+
             // Construye TurnoDTO para pasar al servicio
             TurnoDTO turnoDTO = new TurnoDTO();
-            turnoDTO.setComprobante(comprobante);  // Seteamos el comprobante generado aquí
+            turnoDTO.setComprobante(comprobante);
             turnoDTO.setIdPaciente(registroTurnoDTO.getIdPaciente());
             turnoDTO.setIdProfesional(registroTurnoDTO.getIdProfesional());
             turnoDTO.setFechaHora(fechaHora);
             turnoDTO.setDuracion(registroTurnoDTO.getDuracion());
-            turnoDTO.setIdEstado(registroTurnoDTO.getIdEstado());
+            turnoDTO.setIdEstado(idEstado); // se usa el idEstado verificado
             turnoDTO.setObservaciones(registroTurnoDTO.getObservaciones());
+
+            System.out.println(">> TurnoDTO creado para servicio: " + turnoDTO);
 
             TurnoDTO creado = turnoService.crearTurno(turnoDTO);
 
+            System.out.println(">> Turno creado con ID: " + creado.getId());
+
             return ResponseEntity.ok(creado);
         } catch (Exception e) {
+            System.out.println(">> Error al crear turno: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
+
 
     // Actualizar turno
     @PutMapping("/{id}")
