@@ -20,29 +20,17 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
     // Turnos pasados para un paciente
     List<Turno> findByPacienteIdAndFechaHoraBefore(Long pacienteId, LocalDateTime fechaHora);
 
-    // Todos los turnos por paciente
-    List<Turno> findById(Persona paciente);
-
     // Todos los turnos por profesional
     List<Turno> findByProfesional(Persona profesional);
 
     // Turnos por profesional y fecha (por disponibilidad, etc.)
     List<Turno> findByProfesionalAndFechaHoraBetween(Persona profesional, LocalDateTime inicio, LocalDateTime fin);
 
-    // Turnos por profesional y estado
-    List<Turno> findByProfesionalAndEstado(Persona profesional, Estado estado);
-
     // Turnos por estado
     List<Turno> findByEstado(Estado estado);
 
-    // Turnos por fecha exacta
-    List<Turno> findByFechaHora(LocalDateTime fechaHora);
-
     // Turnos dentro de un rango de fecha y hora (sin filtrar por profesional)
     List<Turno> findByFechaHoraBetween(LocalDateTime inicio, LocalDateTime fin);
-
-    // Turnos por paciente y estado
-    List<Turno> findByPacienteAndEstado(Persona paciente, Estado estado);
 
     // Turnos atendidos por profesional en un rango de fechas
     long countByProfesionalAndEstadoAndFechaHoraBetween(Persona profesional, Estado estado, LocalDateTime inicio, LocalDateTime fin);
@@ -50,15 +38,26 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
     // Turnos cancelados y reprogramados
     long countByEstadoAndFechaHoraBetween(Estado estado, LocalDateTime inicio, LocalDateTime fin);
 
-    long countByFechaHoraBetween(LocalDateTime inicio, LocalDateTime fin);
+    @Query(value = "SELECT MAX(comprobante) FROM turno WHERE comprobante LIKE :prefix%", nativeQuery = true)
+    String findMaxComprobanteByPrefix(@Param("prefix") String prefix);
+
+    // Turnos por fecha exacta
+    List<Turno> findByFechaHora(LocalDateTime fechaHora);
+
+    // Turnos por profesional y estado
+    List<Turno> findByProfesionalAndEstado(Persona profesional, Estado estado);
+
+    // Todos los turnos por paciente
+    List<Turno> findById(Persona paciente);
 
     // Metodo para obtener el último comprobante registrado, ordenando por comprobante descendente y limitando a 1
     @Query(value = "SELECT t.comprobante FROM Turno t ORDER BY t.comprobante DESC")
     List<String> findLastComprobante(Pageable pageable);
 
-    @Query(value = "SELECT MAX(comprobante) FROM turno WHERE comprobante LIKE :prefix%", nativeQuery = true)
-    String findMaxComprobanteByPrefix(@Param("prefix") String prefix);
+    long countByFechaHoraBetween(LocalDateTime inicio, LocalDateTime fin);
 
+    // Turnos por paciente y estado
+    List<Turno> findByPacienteAndEstado(Persona paciente, Estado estado);
 
     // Datos de cancelación por especialidad en un rango de fechas
     @Query(value = "SELECT " +

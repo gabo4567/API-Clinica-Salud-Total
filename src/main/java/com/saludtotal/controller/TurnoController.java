@@ -77,14 +77,24 @@ public class TurnoController {
         }
     }
 
-
-
     // Actualizar turno
     @PutMapping("/{id}")
     public ResponseEntity<TurnoDTO> actualizarTurno(@PathVariable Long id, @RequestBody TurnoDTO turnoDTO) {
+        System.out.println("DEBUG - ID recibido en backend para actualizar turno: " + id);
+        if (id == null) {
+            System.out.println("ERROR - El ID recibido es null");
+            return ResponseEntity.badRequest().build();
+        }
+
+        System.out.println("DEBUG - DTO recibido para actualizar turno: " + turnoDTO);
+
         TurnoDTO actualizado = turnoService.actualizarTurno(id, turnoDTO);
+
+        System.out.println("DEBUG - Turno actualizado devuelto por servicio: " + actualizado);
+
         return ResponseEntity.ok(actualizado);
     }
+
 
     // Eliminar turno
     @DeleteMapping("/{id}")

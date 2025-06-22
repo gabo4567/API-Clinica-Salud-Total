@@ -1,5 +1,7 @@
 package com.saludtotal.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saludtotal.clinica.models.*;
 import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
 import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
@@ -155,20 +157,58 @@ public class TurnoService {
         return convertirADTO(guardado);
     }
 
-
-    // Actualizar turno existente
+    // Actualizar turno existente (sin usar obtenerPorId)
     public TurnoDTO actualizarTurno(Long id, TurnoDTO turnoDTO) {
-        Turno turno = obtenerPorId(id);
+        System.out.println("DEBUG - ID recibido en TurnoService: " + id);
+        System.out.println("DEBUG - DTO recibido: " + turnoDTO);
+
+        Turno turno = new Turno();
+        turno.setId(id);  // Se usa el ID directamente desde la URL
+
+        // Seteamos los datos recibidos en el DTO
         turno.setFechaHora(turnoDTO.getFechaHora());
         turno.setDuracion(turnoDTO.getDuracion());
-        // setear estado y observaciones con valores del DTO
-        // Suponiendo que tienes un metodo para obtener Estado por id:
-        Estado estado = estadoRepository.findById(turnoDTO.getIdEstado())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Estado no encontrado"));
+
+        // DEBUG del ID del estado
+        System.out.println("DEBUG - ID del estado recibido: " + turnoDTO.getIdEstado());
+
+        // Manejo de posible error al buscar el Estado
+        Estado estado;
+        try {
+            estado = estadoRepository.findById(turnoDTO.getIdEstado())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Estado no encontrado con ID: " + turnoDTO.getIdEstado()));
+        } catch (Exception e) {
+            System.out.println("ERROR al obtener Estado desde el DTO: " + e.getMessage());
+            throw e;
+        }
+
         turno.setEstado(estado);
         turno.setObservaciones(turnoDTO.getObservaciones());
 
+        // Asociar paciente
+        Persona paciente = new Persona();
+        paciente.setId(turnoDTO.getIdPaciente());
+        turno.setPaciente(paciente);
+
+        // Asociar profesional
+        Persona profesional = new Persona();
+        profesional.setId(turnoDTO.getIdProfesional());
+        turno.setProfesional(profesional);
+
+        // Comprobante
+        String nuevoComprobante = generarNuevoComprobante(LocalDate.now());
+        turno.setComprobante(nuevoComprobante);
+
+        // Imprimir información antes de guardar
+        System.out.println("DEBUG - Turno.id: " + turno.getId());
+        System.out.println("DEBUG - Paciente.id: " + turno.getPaciente().getId());
+        System.out.println("DEBUG - Profesional.id: " + turno.getProfesional().getId());
+        System.out.println("DEBUG - Estado.id: " + turno.getEstado().getIdEstado());
+
+        // Guardamos
         Turno actualizado = turnoRepository.save(turno);
+
+        System.out.println("DEBUG - Turno actualizado: " + actualizado);
         return convertirADTO(actualizado);
     }
 
