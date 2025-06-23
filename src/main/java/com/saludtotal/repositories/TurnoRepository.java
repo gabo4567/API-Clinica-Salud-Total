@@ -53,9 +53,11 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
             @Param("fechaHoraFin") LocalDateTime fechaHoraFin
     );
 
-
     // Verifica si hay un turno con ese profesional y con esa fecha
     boolean existsByProfesionalIdAndFechaHora(Long idProfesional, LocalDateTime fechaHora);
+
+    // Verifica si hay un turno con ese profesional y con esa fecha pero sin usar el id
+    boolean existsByProfesionalIdAndFechaHoraAndIdNot(Long idProfesional, LocalDateTime fechaHora, Long idExcluido);
 
     // Turnos por fecha exacta
     List<Turno> findByFechaHora(LocalDateTime fechaHora);

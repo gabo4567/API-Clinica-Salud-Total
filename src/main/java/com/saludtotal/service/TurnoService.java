@@ -152,6 +152,7 @@ public class TurnoService {
                 .collect(Collectors.toList());
     }
 
+    // Crear turno
     public TurnoDTO crearTurno(TurnoDTO turnoDTO) {
         System.out.println(">> Crear turno - recibo DTO: " + turnoDTO);
         String nuevoComprobante = generarNuevoComprobante(LocalDate.now());
@@ -184,24 +185,18 @@ public class TurnoService {
         return convertirADTO(guardado);
     }
 
-
-
-    // Actualizar turno existente (sin usar obtenerPorId)
+    // Actualizar turno
     public TurnoDTO actualizarTurno(Long id, TurnoDTO turnoDTO) {
         System.out.println("DEBUG - ID recibido en TurnoService: " + id);
         System.out.println("DEBUG - DTO recibido: " + turnoDTO);
 
         Turno turno = new Turno();
-        turno.setId(id);  // Se usa el ID directamente desde la URL
+        turno.setId(id);
 
-        // Seteamos los datos recibidos en el DTO
+        // Seteamos los datos
         turno.setFechaHora(turnoDTO.getFechaHora());
         turno.setDuracion(turnoDTO.getDuracion());
 
-        // DEBUG del ID del estado
-        System.out.println("DEBUG - ID del estado recibido: " + turnoDTO.getIdEstado());
-
-        // Manejo de posible error al buscar el Estado
         Estado estado;
         try {
             estado = estadoRepository.findById(turnoDTO.getIdEstado())
@@ -210,36 +205,44 @@ public class TurnoService {
             System.out.println("ERROR al obtener Estado desde el DTO: " + e.getMessage());
             throw e;
         }
-
         turno.setEstado(estado);
         turno.setObservaciones(turnoDTO.getObservaciones());
 
-        // Asociar paciente
         Persona paciente = new Persona();
         paciente.setId(turnoDTO.getIdPaciente());
         turno.setPaciente(paciente);
 
-        // Asociar profesional
         Persona profesional = new Persona();
         profesional.setId(turnoDTO.getIdProfesional());
         turno.setProfesional(profesional);
 
-        // Comprobante
+        // 🧠 Lógica de validación: verificar si ya hay un turno con ese profesional y ese horario, excluyendo este mismo turno
+        boolean existeSuperposicion = turnoRepository.existsByProfesionalIdAndFechaHoraAndIdNot(
+                turno.getProfesional().getId(),
+                turno.getFechaHora(),
+                id // excluimos el turno que estamos actualizando
+        );
+
+        if (existeSuperposicion) {
+            System.err.println(">> Error: Ya existe otro turno en ese horario con ese profesional.");
+            throw new IllegalStateException("Ya existe un turno reservado en ese horario para este profesional.");
+        }
+
+        // Generar nuevo comprobante si se desea (puede mantenerse el original también)
         String nuevoComprobante = generarNuevoComprobante(LocalDate.now());
         turno.setComprobante(nuevoComprobante);
 
-        // Imprimir información antes de guardar
         System.out.println("DEBUG - Turno.id: " + turno.getId());
         System.out.println("DEBUG - Paciente.id: " + turno.getPaciente().getId());
         System.out.println("DEBUG - Profesional.id: " + turno.getProfesional().getId());
         System.out.println("DEBUG - Estado.id: " + turno.getEstado().getIdEstado());
 
-        // Guardamos
         Turno actualizado = turnoRepository.save(turno);
-
         System.out.println("DEBUG - Turno actualizado: " + actualizado);
+
         return convertirADTO(actualizado);
     }
+
 
     // Eliminar turno (cancelar)
     public void eliminarTurno(Long id) {
