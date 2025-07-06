@@ -103,6 +103,16 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
                                                @Param("fechaFin") LocalDateTime fechaFin);
 
     @Query(value = """
+    SELECT COUNT(*) 
+    FROM turno t
+    WHERE t.fecha_hora BETWEEN :fechaInicio AND :fechaFin
+    """, nativeQuery = true)
+    Long obtenerTotalTurnos(
+            @Param("fechaInicio") LocalDateTime fechaInicio,
+            @Param("fechaFin") LocalDateTime fechaFin
+    );
+
+    @Query(value = """
     SELECT p.id_persona AS idProfesional, CONCAT(p.nombre, ' ', p.apellido) AS nombreProfesional, COUNT(t.id_turno) AS cantidadTurnos
     FROM turno t
     JOIN persona p ON t.id_profesional = p.id_persona
@@ -144,6 +154,30 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
             @Param("especialidad") String especialidad,
             @Param("fechaInicio") LocalDateTime fechaInicio,
             @Param("fechaFin") LocalDateTime fechaFin);
+
+
+    @Query(value = """
+    SELECT 
+        e2.nombre AS especialidad,
+        COUNT(*) AS totalTurnos,
+        SUM(CASE WHEN e.nombre = 'Cancelado' THEN 1 ELSE 0 END) AS cancelados,
+        SUM(CASE WHEN e.nombre = 'Reprogramado' THEN 1 ELSE 0 END) AS reprogramados,
+        SUM(CASE WHEN e.nombre = 'Atendido' THEN 1 ELSE 0 END) AS atendidos
+    FROM turno t
+    JOIN persona p ON t.id_profesional = p.id_persona
+    JOIN especialidad e2 ON p.id_especialidad = e2.id_especialidad
+    JOIN estado e ON t.id_estado = e.id_estado
+    WHERE (:especialidad IS NULL OR LOWER(e2.nombre) LIKE :especialidad)
+      AND t.fecha_hora BETWEEN :fechaInicio AND :fechaFin
+    GROUP BY e2.nombre
+    ORDER BY e2.nombre
+    """, nativeQuery = true)
+    List<Object[]> obtenerTurnosPorEstado(
+            @Param("especialidad") String especialidad,
+            @Param("fechaInicio") LocalDateTime fechaInicio,
+            @Param("fechaFin") LocalDateTime fechaFin);
+
+
 
 
 

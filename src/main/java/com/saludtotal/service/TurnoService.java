@@ -10,14 +10,12 @@ import com.saludtotal.repositories.EstadoRepository;
 
 import org.springframework.stereotype.Service;
 
-import java.security.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,12 +63,14 @@ public class TurnoService {
         return prefix + numeroFormateado;
     }
 
-    public List<CantidadTurnosPorDiaDTO> obtenerCantidadTurnosPorDia(LocalDate fechaInicio, LocalDate fechaFin) {
+    public ResultadoTurnosPorDiaDTO obtenerCantidadTurnosPorDia(LocalDate fechaInicio, LocalDate fechaFin) {
         LocalDateTime inicio = fechaInicio.atStartOfDay();
         LocalDateTime fin = fechaFin.atTime(23, 59, 59);
 
         List<Object[]> resultados = turnoRepository.obtenerCantidadTurnosPorDia(inicio, fin);
         List<CantidadTurnosPorDiaDTO> lista = new ArrayList<>();
+
+        long totalTurnos = 0;
 
         for (Object[] fila : resultados) {
             LocalDate fecha;
@@ -90,10 +90,12 @@ public class TurnoService {
 
             long cantidad = ((Number) fila[1]).longValue();
             lista.add(new CantidadTurnosPorDiaDTO(fecha, cantidad));
+            totalTurnos += cantidad;  // Sumamos para total general
         }
 
-        return lista;
+        return new ResultadoTurnosPorDiaDTO(lista, totalTurnos);
     }
+
 
     public List<CantidadTurnosPorProfesionalDTO> obtenerCantidadTurnosPorProfesionalEnRango(LocalDate fechaInicio, LocalDate fechaFin, String nombreProfesional) {
         LocalDateTime inicio = fechaInicio.atStartOfDay();
@@ -145,6 +147,32 @@ public class TurnoService {
     }
 
 
+    public List<TurnosPorEstadoDTO> obtenerTurnosPorEstado(String especialidad, LocalDate fechaInicio, LocalDate fechaFin) {
+
+        if (especialidad != null && especialidad.equalsIgnoreCase("todas")) {
+            especialidad = null; // para que no filtre por especialidad
+        } else if (especialidad != null) {
+            especialidad = "%" + especialidad.toLowerCase() + "%"; // para el LIKE en la consulta
+        }
+
+        LocalDateTime inicio = fechaInicio.atStartOfDay();
+        LocalDateTime fin = fechaFin.atTime(23, 59, 59);
+
+        List<Object[]> resultados = turnoRepository.obtenerTurnosPorEstado(especialidad, inicio, fin);
+
+        List<TurnosPorEstadoDTO> lista = new ArrayList<>();
+        for (Object[] fila : resultados) {
+            String esp = (String) fila[0];
+            Long total = fila[1] != null ? ((Number) fila[1]).longValue() : 0L;
+            Long cancelados = fila[2] != null ? ((Number) fila[2]).longValue() : 0L;
+            Long reprogramados = fila[3] != null ? ((Number) fila[3]).longValue() : 0L;
+            Long atendidos = fila[4] != null ? ((Number) fila[4]).longValue() : 0L;
+
+            lista.add(new TurnosPorEstadoDTO(esp, total, cancelados, reprogramados, atendidos));
+        }
+
+        return lista;
+    }
 
 
     // Obtener todos los turnos

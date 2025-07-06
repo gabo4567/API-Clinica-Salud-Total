@@ -47,11 +47,11 @@ public class TurnoController {
     }
 
     @GetMapping("/reportes/turnos-por-dia")
-    public ResponseEntity<List<CantidadTurnosPorDiaDTO>> getTurnosPorDia(
+    public ResponseEntity<ResultadoTurnosPorDiaDTO> getTurnosPorDia(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
 
-        List<CantidadTurnosPorDiaDTO> resultado = turnoService.obtenerCantidadTurnosPorDia(fechaInicio, fechaFin);
+        ResultadoTurnosPorDiaDTO resultado = turnoService.obtenerCantidadTurnosPorDia(fechaInicio, fechaFin);
         return ResponseEntity.ok(resultado);
     }
 
@@ -77,6 +77,15 @@ public class TurnoController {
         return ResponseEntity.ok(resultado);
     }
 
+    @GetMapping("/reportes/turnos-por-estado")
+    public ResponseEntity<List<TurnosPorEstadoDTO>> getTurnosPorEstado(
+            @RequestParam(required = false) String especialidad,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin
+    ) {
+        List<TurnosPorEstadoDTO> resultado = turnoService.obtenerTurnosPorEstado(especialidad, fechaInicio, fechaFin);
+        return ResponseEntity.ok(resultado);
+    }
 
 
     // Crear nuevo turno
