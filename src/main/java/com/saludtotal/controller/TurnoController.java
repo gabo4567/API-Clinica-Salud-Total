@@ -46,6 +46,39 @@ public class TurnoController {
         return ResponseEntity.ok(turnoService.obtenerDTOporId(id));
     }
 
+    @GetMapping("/reportes/turnos-por-dia")
+    public ResponseEntity<List<CantidadTurnosPorDiaDTO>> getTurnosPorDia(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+
+        List<CantidadTurnosPorDiaDTO> resultado = turnoService.obtenerCantidadTurnosPorDia(fechaInicio, fechaFin);
+        return ResponseEntity.ok(resultado);
+    }
+
+    @GetMapping("/reportes/turnos-por-profesional")
+    public ResponseEntity<List<CantidadTurnosPorProfesionalDTO>> getCantidadTurnosPorProfesional(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
+            @RequestParam(required = false) String nombreProfesional) {
+
+        List<CantidadTurnosPorProfesionalDTO> resultado = turnoService.obtenerCantidadTurnosPorProfesionalEnRango(
+                fechaInicio, fechaFin, nombreProfesional
+        );
+        return ResponseEntity.ok(resultado);
+    }
+
+    @GetMapping("/reportes/pacientes-por-especialidad")
+    public ResponseEntity<List<PacientesAtendidosPorEspecialidadDTO>> getPacientesPorEspecialidad(
+            @RequestParam(required = false) String especialidad,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+
+        List<PacientesAtendidosPorEspecialidadDTO> resultado = turnoService.obtenerPacientesAtendidosPorEspecialidad(especialidad, fechaInicio, fechaFin);
+        return ResponseEntity.ok(resultado);
+    }
+
+
+
     // Crear nuevo turno
     @PostMapping
     public ResponseEntity<?> crearTurno(@RequestBody RegistroTurnoDTO registroTurnoDTO) {

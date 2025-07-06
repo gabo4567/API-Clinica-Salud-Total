@@ -91,4 +91,60 @@ public interface TurnoRepository extends JpaRepository<Turno, Long> {
             "GROUP BY e.nombre", nativeQuery = true)
     List<Object[]> obtenerDatosCancelacionPorEspecialidad(@Param("fechaInicio") LocalDate fechaInicio,
                                                           @Param("fechaFin") LocalDate fechaFin);
+
+    @Query(value = """
+    SELECT DATE(fecha_hora) AS fecha, COUNT(*) AS cantidad
+    FROM turno
+    WHERE fecha_hora BETWEEN :fechaInicio AND :fechaFin
+    GROUP BY DATE(fecha_hora)
+    ORDER BY DATE(fecha_hora)
+    """, nativeQuery = true)
+    List<Object[]> obtenerCantidadTurnosPorDia(@Param("fechaInicio") LocalDateTime fechaInicio,
+                                               @Param("fechaFin") LocalDateTime fechaFin);
+
+    @Query(value = """
+    SELECT p.id_persona AS idProfesional, CONCAT(p.nombre, ' ', p.apellido) AS nombreProfesional, COUNT(t.id_turno) AS cantidadTurnos
+    FROM turno t
+    JOIN persona p ON t.id_profesional = p.id_persona
+    WHERE t.fecha_hora BETWEEN :fechaInicio AND :fechaFin
+    GROUP BY p.id_persona, p.nombre, p.apellido
+    ORDER BY cantidadTurnos DESC
+    """, nativeQuery = true)
+    List<Object[]> obtenerCantidadTurnosPorProfesionalEnRango(
+            @Param("fechaInicio") LocalDateTime fechaInicio,
+            @Param("fechaFin") LocalDateTime fechaFin);
+
+    @Query(value = """
+    SELECT p.id_persona, CONCAT(p.nombre, ' ', p.apellido) AS nombre_completo, COUNT(t.id_turno) AS cantidad
+    FROM turno t
+    JOIN persona p ON t.id_profesional = p.id_persona
+    WHERE p.id_rol = 3
+      AND LOWER(CONCAT(p.nombre, ' ', p.apellido)) LIKE %:nombre%
+      AND t.fecha_hora BETWEEN :inicio AND :fin
+    GROUP BY p.id_persona, nombre_completo
+    ORDER BY nombre_completo
+    """, nativeQuery = true)
+    List<Object[]> obtenerCantidadTurnosPorProfesionalFiltrado(
+            @Param("nombre") String nombre,
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fin") LocalDateTime fin
+    );
+
+    @Query(value = """
+    SELECT e.nombre AS especialidad, COUNT(DISTINCT t.id_paciente) AS cantidadPacientes
+    FROM turno t
+    JOIN persona p ON t.id_profesional = p.id_persona
+    JOIN especialidad e ON p.id_especialidad = e.id_especialidad
+    WHERE (:especialidad IS NULL OR LOWER(e.nombre) LIKE :especialidad)
+      AND t.fecha_hora BETWEEN :fechaInicio AND :fechaFin
+    GROUP BY e.nombre
+    ORDER BY e.nombre
+    """, nativeQuery = true)
+    List<Object[]> obtenerPacientesAtendidosPorEspecialidad(
+            @Param("especialidad") String especialidad,
+            @Param("fechaInicio") LocalDateTime fechaInicio,
+            @Param("fechaFin") LocalDateTime fechaFin);
+
+
+
 }

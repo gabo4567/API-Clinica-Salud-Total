@@ -1,10 +1,7 @@
 package com.saludtotal.service;
 
 import com.saludtotal.clinica.models.*;
-import com.saludtotal.dto.ReporteTurnosAtendidosDTO;
-import com.saludtotal.dto.ReporteTurnosCanceladosYReprogramadosDTO;
-import com.saludtotal.dto.TasaCancelacionPorEspecialidadDTO;
-import com.saludtotal.dto.TurnoDTO;
+import com.saludtotal.dto.*;
 import com.saludtotal.exceptions.RecursoNoEncontradoException;
 import com.saludtotal.repositories.TurnoRepository;
 import com.saludtotal.repositories.PacienteRepository;
@@ -13,11 +10,14 @@ import com.saludtotal.repositories.EstadoRepository;
 
 import org.springframework.stereotype.Service;
 
+import java.security.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,6 +64,86 @@ public class TurnoService {
 
         return prefix + numeroFormateado;
     }
+
+    public List<CantidadTurnosPorDiaDTO> obtenerCantidadTurnosPorDia(LocalDate fechaInicio, LocalDate fechaFin) {
+        LocalDateTime inicio = fechaInicio.atStartOfDay();
+        LocalDateTime fin = fechaFin.atTime(23, 59, 59);
+
+        List<Object[]> resultados = turnoRepository.obtenerCantidadTurnosPorDia(inicio, fin);
+        List<CantidadTurnosPorDiaDTO> lista = new ArrayList<>();
+
+        for (Object[] fila : resultados) {
+            LocalDate fecha;
+
+            Object rawFecha = fila[0];
+            if (rawFecha instanceof java.sql.Date sqlDate) {
+                fecha = sqlDate.toLocalDate();
+            } else if (rawFecha instanceof java.sql.Timestamp ts) {
+                fecha = ts.toLocalDateTime().toLocalDate();
+            } else if (rawFecha instanceof java.util.Date date) {
+                fecha = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            } else if (rawFecha instanceof String str) {
+                fecha = LocalDate.parse(str);
+            } else {
+                throw new IllegalStateException("Tipo inesperado para la fecha: " + rawFecha.getClass());
+            }
+
+            long cantidad = ((Number) fila[1]).longValue();
+            lista.add(new CantidadTurnosPorDiaDTO(fecha, cantidad));
+        }
+
+        return lista;
+    }
+
+    public List<CantidadTurnosPorProfesionalDTO> obtenerCantidadTurnosPorProfesionalEnRango(LocalDate fechaInicio, LocalDate fechaFin, String nombreProfesional) {
+        LocalDateTime inicio = fechaInicio.atStartOfDay();
+        LocalDateTime fin = fechaFin.atTime(23, 59, 59);
+
+        List<Object[]> resultados;
+
+        if (nombreProfesional != null && !nombreProfesional.trim().isEmpty()) {
+            resultados = turnoRepository.obtenerCantidadTurnosPorProfesionalFiltrado(nombreProfesional.trim().toLowerCase(), inicio, fin);
+        } else {
+            resultados = turnoRepository.obtenerCantidadTurnosPorProfesionalEnRango(inicio, fin);
+        }
+
+        List<CantidadTurnosPorProfesionalDTO> lista = new ArrayList<>();
+        for (Object[] fila : resultados) {
+            Long idProfesional = ((Number) fila[0]).longValue();
+            String nombre = (String) fila[1];
+            Long cantidad = ((Number) fila[2]).longValue();
+            lista.add(new CantidadTurnosPorProfesionalDTO(idProfesional, nombre, cantidad));
+        }
+
+        return lista;
+    }
+
+
+    public List<PacientesAtendidosPorEspecialidadDTO> obtenerPacientesAtendidosPorEspecialidad(String especialidad, LocalDate fechaInicio, LocalDate fechaFin) {
+
+        // Si es "todas", lo interpretamos como sin filtro (null)
+        if (especialidad != null && especialidad.equalsIgnoreCase("todas")) {
+            especialidad = null;
+        } else if (especialidad != null) {
+            especialidad = "%" + especialidad.toLowerCase() + "%";  // para LIKE en la consulta
+        }
+
+        LocalDateTime inicio = fechaInicio.atStartOfDay();
+        LocalDateTime fin = fechaFin.atTime(23, 59, 59);
+
+        List<Object[]> resultados = turnoRepository.obtenerPacientesAtendidosPorEspecialidad(especialidad, inicio, fin);
+
+        List<PacientesAtendidosPorEspecialidadDTO> lista = new ArrayList<>();
+        for (Object[] fila : resultados) {
+            String nombreEspecialidad = (String) fila[0];
+            Long cantidadPacientes = ((Number) fila[1]).longValue();
+
+            lista.add(new PacientesAtendidosPorEspecialidadDTO(nombreEspecialidad, cantidadPacientes));
+        }
+
+        return lista;
+    }
+
 
 
 
