@@ -352,6 +352,33 @@ public class TurnoService {
     }
 
 
+    // Actualizar estado del turno
+    public TurnoDTO actualizarEstadoTurno(Long id, Long idEstado) {
+        Turno turno = turnoRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Turno no encontrado con ID: " + id));
+
+        Estado estado = estadoRepository.findById(idEstado)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estado no encontrado con ID: " + idEstado));
+
+        // Validar la superposición si fuera necesario solo si cambia a programado
+        if (idEstado.equals(10L)) { // 10 = programado
+            boolean existeSuperposicion = turnoRepository.existsByProfesionalIdAndFechaHoraAndIdNot(
+                    turno.getProfesional().getId(),
+                    turno.getFechaHora(),
+                    id
+            );
+            if (existeSuperposicion) {
+                throw new IllegalStateException("Ya existe un turno reservado en ese horario para este profesional.");
+            }
+        }
+
+        turno.setEstado(estado);
+
+        Turno actualizado = turnoRepository.save(turno);
+        return convertirADTO(actualizado);
+    }
+
+
     // Eliminar turno (cancelar)
     public void eliminarTurno(Long id) {
         Turno turno = obtenerPorId(id);

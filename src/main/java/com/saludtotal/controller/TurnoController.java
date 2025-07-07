@@ -161,6 +161,19 @@ public class TurnoController {
         return ResponseEntity.ok(actualizado);
     }
 
+    // PATCH o PUT solo para actualizar estado
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<TurnoDTO> actualizarEstadoTurno(@PathVariable Long id, @RequestParam Long idEstado) {
+        System.out.println("DEBUG - Actualizando estado turno ID: " + id + " a estado: " + idEstado);
+
+        TurnoDTO turnoActualizado = turnoService.actualizarEstadoTurno(id, idEstado);
+
+        if (turnoActualizado == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(turnoActualizado);
+    }
 
     // Eliminar turno
     @DeleteMapping("/{id}")
